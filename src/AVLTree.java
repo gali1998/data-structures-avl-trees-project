@@ -243,17 +243,22 @@ public class AVLTree {
 		private IAVLNode right;
 		private IAVLNode parent;
 		private int height;
+		private int size;
+		private int rank;
 		
 		public AVLNode() {
 			this(-1, null);
 			
 			this.isVirtual = true;
 			this.height = -1;
+			this.rank = -1;
 		}
 		
 		public AVLNode(int key, String info) {
 			this.key = key;
 			this.info = info;
+			this.rank = 0;
+			this.height = 0;
 			this.isVirtual = false;
 		}
 
@@ -267,6 +272,7 @@ public class AVLTree {
 
 		public void setLeft(IAVLNode node) {
 			this.left = node;
+			this.update();
 		}
 
 		public IAVLNode getLeft() {
@@ -275,6 +281,7 @@ public class AVLTree {
 
 		public void setRight(IAVLNode node) {
 			this.right = node;
+			this.update();
 		}
 
 		public IAVLNode getRight() {
@@ -283,6 +290,7 @@ public class AVLTree {
 
 		public void setParent(IAVLNode node) {
 			this.parent = node;
+			this.update();
 		}
 
 		public IAVLNode getParent() {
@@ -300,6 +308,30 @@ public class AVLTree {
 
 		public int getHeight() {
 			return this.height;
+		}
+		
+		public int getSize() {
+			return this.size;
+		}
+		
+		public void promote() {
+			this.rank++;
+		}
+		
+		public void demote() {
+			this.rank--;
+		}
+		
+		public void update() {
+			int size = 1;
+			
+			if (this.right.isRealNode()) {
+				size += ((AVLNode)this.right).getSize();
+			}
+			
+			if (this.left.isRealNode()) {
+				size += ((AVLNode)this.left).getSize();
+			}
 		}
 	}
 
