@@ -1,5 +1,8 @@
+import jdk.jshell.spi.ExecutionControl;
+
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 /**
  *
@@ -21,7 +24,7 @@ public class AVLTree {
 	 *
 	 */
 	public boolean empty() {
-		return false; // to be replaced by student code
+		return (root == null) || (root.isRealNode()) || (size == 0);
 	}
 
 	/**
@@ -30,7 +33,7 @@ public class AVLTree {
 	 * returns the info of an item with key k if it exists in the tree otherwise,
 	 * returns null
 	 */
-	public String search(int k) {	
+	public String search(int k) {
 		IAVLNode node = this.root;
 		
 		return this.search(node, k);
@@ -75,7 +78,120 @@ public class AVLTree {
 	 * -1 if an item with key k was not found in the tree.
 	 */
 	public int delete(int k) {
-		return 42; // to be replaced by student code
+		IAVLNode toDelete = this.searchNode(k);
+		if (toDelete == null) {
+			return -1;
+		}
+		// The key is in the tree;
+		return this.delete(toDelete);
+	}
+
+	/**
+	 * deleting node from the tree, assuming it is in the tree.
+	 * @param node - the node to delete
+	 * @return number of rebalancing operations.
+	 */
+	private int delete(IAVLNode node) {
+		return 0;
+
+		IAVLNode replacement = this.getDeletedReplacement(node);
+		int numRebalancing = 0;
+		numRebalancing += this.delete(replacement);
+		IAVLNode parent = this.replace(node, replacement);
+	}
+
+	/**
+	 * replacing node's place in the tree with replacement
+	 * @param node
+	 * @param replacement
+	 * @return prev(node.getParent())
+	 */
+	private IAVLNode replace(IAVLNode node, IAVLNode replacement) {
+		IAVLNode parent = node.getParent();
+		replacement.setParent(parent);
+		replacement.setRight(node.getRight());
+		replacement.setLeft(node.getLeft());
+		if (parent.getKey() < node.getKey()) {
+			parent.setRight(replacement);
+		} else {
+			parent.setLeft(replacement);
+		}
+		return parent;
+	}
+
+	/**
+	 * helper function for delete, getting the node to delete replacement
+	 * @param node
+	 * @return if node is a leaf - a virtual node
+	 * 		   if node is a unary node - it's child
+	 * 		   if node is a binary node - it's successor
+	 */
+	private IAVLNode getDeletedReplacement(IAVLNode node) {
+		if (!node.getRight().isRealNode()) {
+			return node.getLeft();
+		} else {
+			// getting the successor
+			IAVLNode successor = node.getRight();
+			while (successor.getLeft().isRealNode()) {
+				successor = successor.getLeft();
+			}
+			return successor;
+		}
+	}
+
+	/**
+	 * Searching for node with key k in entire tree
+	 * @param k
+	 * @return the requested node, or null if it is not in the tree.
+	 */
+	private IAVLNode searchNode(int k) {
+		return searchNode(this.root, k);
+	}
+
+	/**
+	 * bst searching @param node's subtree recursively for a node according to key k
+	 * @param node - parent node
+	 * @param k - key
+	 * @return the requested node, or null if it is not in the tree.
+	 */
+	private IAVLNode searchNode(IAVLNode node, int k) {
+		if (node.getKey() == k)
+			return node;
+		if (node.getKey() > k) {
+			if (node.getLeft().isRealNode()) {
+				return searchNode(node.getLeft(), k);
+			} else {
+				return null;
+			}
+		}
+		else // meaning node.getKey() < k
+		{
+			if (node.getRight().isRealNode()) {
+				return searchNode(node.getRight(), k);
+			} else {
+				return null;
+			}
+		}
+	}
+
+	/**
+	 * Demotes a given node (using setHeight)
+	 * @param node
+	 * @return the compelxity of the action
+	 */
+	private static int demote(IAVLNode node) {
+		node.setHeight(node.getHeight() - 1);
+		return 1;
+	}
+
+	/**
+	 * Promotes a given node (using setHeight)
+	 * @param node
+	 * @return the complexity of the action
+	 */
+	private static int promote(IAVLNode node) {
+		node.setHeight(node.getHeight() + 1);
+		return 1;
 	}
 
 	/**
@@ -105,7 +221,19 @@ public class AVLTree {
 	 * tree is empty
 	 */
 	public String max() {
-		return "42"; // to be replaced by student code
+		// If the tree is empty - return null
+		if (this.empty()) {
+			return null;
+		}
+		// The tree isn't empty, meaning we have at least the root node with a value
+		IAVLNode curr = this.root;
+		// While the right child is not a virtual node, we descend down the rightmost branch of the tree, until
+		// we reach the rightmost node. Meaning this is the node with the largest key in the tree.
+		while (curr.getRight().isRealNode()) {
+			curr = curr.getRight();
+		}
+
+		return curr.getValue();
 	}
 
 	/**
@@ -136,12 +264,58 @@ public class AVLTree {
 	 * respective keys, or an empty array if the tree is empty.
 	 */
 	public String[] infoToArray() {
-		String[] arr = new String[42]; // to be replaced by student code
-		return arr; // to be replaced by student code
+		// The general idea of this function, is that we basically scan all of the subtrees of this tree, according to
+		// the key value, in an ascending manner.
+		// 1. We start from the tree's root (current = root)
+		// 2. We set index from smallest (currIndex = 0)
+		// 3. Until currIndex == tree.size():
+		// 		3.1. We then travel to the next smallest key (the list is prioritized according to index):
+		// 			3.1.1. current's leftmost child node (we save every node we visit on the way in a stack)
+		//			3.1.2. current's next right child node
+		// 			3.1.3. current's last unsaved parent (using the stack's top node)
+		// 		3.2. We save it's data in position currIndex
+		//		3.3. We increment currIndex
+		// Since we visit every node at most twice (once when saving in the stack, second time when removing from the stack)
+		// we reach a total of O(n)
+		String[] arr = new String[this.size()];
+
+		// If the tree is empty we return an empty array
+		if (!this.empty()) {
+
+			Stack<IAVLNode> nodeStack = new Stack<>();
+			IAVLNode curr = this.root;
+			int currIndex = 0;
+
+			while (currIndex < this.size()) {
+				// first we get the left branch, and we save every node until we reach the leftmost node of the branch.
+				while (curr.getLeft().isRealNode()) {
+					nodeStack.push(curr);
+					curr = curr.getLeft();
+				}
+				// we save it at the leftmost open space in the array (as it is the smallest key in the subtree)
+				// and we increment the leftmost array space's index
+				arr[currIndex] = curr.getValue();
+				currIndex++;
+
+				// Now we ascend along the visited nodes, and store the value of each of them in the next open space
+				// in the array, until we reach a node with a right child, or we ran out of parent nodes.
+				while (!curr.getRight().isRealNode() && !nodeStack.empty()) {
+					curr = nodeStack.pop();
+					arr[currIndex] = curr.getValue();
+					currIndex++;
+				}
+				// If there is a next right node, we move towards it.
+				if (curr.getRight().isRealNode()) {
+					curr = curr.getRight();
+				}
+			}
+		}
+
+		return arr;
 	}
 	
 	private List<IAVLNode> inorderWalk() {
-		List<IAVLNode> treeNodes = new LinkedList<AVLTree.IAVLNode>();
+		List<IAVLNode> treeNodes = new LinkedList<>();
 		IAVLNode node = this.getRoot();
 		
 		this.inorderWalk(node, treeNodes);
@@ -163,7 +337,7 @@ public class AVLTree {
 	 * precondition: none postcondition: none
 	 */
 	public int size() {
-		return 42; // to be replaced by student code
+		return this.size;
 	}
 
 	/**
@@ -174,7 +348,7 @@ public class AVLTree {
 	 * precondition: none postcondition: none
 	 */
 	public IAVLNode getRoot() {
-		return null;
+		return this.root;
 	}
 
 	/**
@@ -197,7 +371,103 @@ public class AVLTree {
 	 * keys(). t/tree might be empty (rank = -1). postcondition: none
 	 */
 	public int join(IAVLNode x, AVLTree t) {
-		return 0;
+		int complexity = 1;
+		char shortDir = 'R';
+		char tallDir = 'L';
+		IAVLNode shorter = this.getRoot();
+		IAVLNode taller = t.getRoot();
+		if (shorter.getHeight() > taller.getHeight()) {
+			shorter = t.getRoot();
+			taller = t.getRoot();
+		}
+		if (shorter.getKey() < taller.getKey()) {
+			shortDir = 'L';
+			tallDir = 'R';
+		}
+		IAVLNode curr = taller;
+		while (curr.getHeight() > shorter.getHeight()) {
+			curr = curr.getLeft();
+			complexity++; // increasing complexity for every node we visit.
+		}
+		x.setHeight(shorter.getHeight() + 1);
+		x.setParent(taller.getParent());
+		this.setChild(taller.getParent(), shortDir, x);
+		this.setChild(x, shortDir, shorter);
+		this.setChild(x, tallDir, taller);
+		// We need to rebalance
+		if (x.getHeight() == x.getParent().getHeight()) {
+			// x 'tall side' child is 2 ranks below x -> we need to rebalance
+			if (x.getHeight() - this.getChild(x, tallDir).getHeight() == 2) {
+				rotate(x.getParent(), x);
+			}
+			// x 'short side' child is 2 ranks below x -> we need to rebalance
+			else if (x.getHeight() - this.getChild(x, shortDir).getHeight() == 2) {
+				IAVLNode xTall = this.getChild(x, tallDir);
+				rotate(x, xTall);
+				rotate(xTall.getParent(), xTall);
+			}
+		}
+		return complexity;
+	}
+
+	/**
+	 * rotates a parent and child node (decides the rotation direction according to the child's direction)
+	 * if 'child' is not a direct child node of 'parent' - nothing happens.
+	 * @param parent - parent node
+	 * @param child - child node
+	 */
+	private void rotate(IAVLNode parent, IAVLNode child) {
+		if (parent.getRight() == child) {
+			parent.setRight(child.getLeft());
+			child.setLeft(parent);
+		} else if (parent.getLeft() == child) {
+			parent.setLeft(child.getRight());
+			child.setRight(parent);
+		}
+	}
+
+	/**
+	 * retrieves node's child according to the requested direction
+	 * @param node - the parent node
+	 * @param dir - 'R' for getRight, 'L' for getLeft
+	 * @return the requested side's node, or null if not a valid direction.
+	 */
+	private IAVLNode getChild(IAVLNode node, char dir){
+		switch(dir) {
+			case 'R':
+				return node.getRight();
+			case 'L':
+				return node.getLeft();
+			default:
+				return null;
+		}
+	}
+
+	/**
+	 * setting a child node 'child' in direction 'dir' for parent node 'node'
+	 * prev( getChild(node, dir) ) == @post( getChild(child, dir ) )
+	 * this is a helper method and DOES NOT COMPARE KEYS
+	 * @param node - parent node
+	 * @param dir - 'R' for setRight, 'L' for setLeft
+	 * @param child - child node to set
+	 */
+	private void setChild(IAVLNode node, char dir, IAVLNode child){
+		switch(dir) {
+			case 'R':
+				child.getRight().setParent(node.getRight());
+				node.getRight().setRight(child.getRight());
+				node.getRight().setParent(child);
+				child.setRight(node.getRight());
+				node.setRight(child.getRight().getRight());
+				child.setParent(node);
+			case 'L':
+				child.getLeft().setParent(node.getLeft());
+				node.getLeft().setLeft(child.getLeft());
+				node.getLeft().setParent(child);
+				child.setLeft(node.getLeft());
+				node.setLeft(child.getLeft().getLeft());
+				child.setParent(node);
+		}
 	}
 
 	/**
