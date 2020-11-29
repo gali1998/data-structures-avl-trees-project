@@ -93,11 +93,11 @@ public class AVLTree {
 	 */
 	private int delete(IAVLNode node) {
 		return 0;
-
-		IAVLNode replacement = this.getDeletedReplacement(node);
-		int numRebalancing = 0;
-		numRebalancing += this.delete(replacement);
-		IAVLNode parent = this.replace(node, replacement);
+//
+//		IAVLNode replacement = this.getDeletedReplacement(node);
+//		int numRebalancing = 0;
+//		numRebalancing += this.delete(replacement);
+//		IAVLNode parent = this.replace(node, replacement);
 	}
 
 	/**
