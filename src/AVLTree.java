@@ -24,7 +24,8 @@ public class AVLTree {
 	 *
 	 */
 	public boolean empty() {
-		return (root == null) || (root.isRealNode()) || (size == 0);
+		// These are all equivalent expressions
+		return ((root == null) || (!root.isRealNode())) && (size == 0);
 	}
 
 	/**
@@ -82,22 +83,69 @@ public class AVLTree {
 		if (toDelete == null) {
 			return -1;
 		}
-		// The key is in the tree;
-		return this.delete(toDelete);
+		// first we delete like every BST
+		IAVLNode replacement = this.getDeletedReplacement(toDelete);
+		IAVLNode parent = this.replace(toDelete, replacement);
+		// rebalancing and returning the number of rebalancing operations
+		return this.recursiveDeleteRebalancing(parent, replacement);
 	}
 
 	/**
-	 * deleting node from the tree, assuming it is in the tree.
-	 * @param node - the node to delete
-	 * @return number of rebalancing operations.
+	 * recursively apply rebalancing operations after deletion
+	 * @param parent - parent of the deleted node
+	 * @param deleteReplacement - the replacement node, AFTER it has been deleted from the tree and applied as
+	 *                            parent's child
+	 * @return # of rebalancing operations
 	 */
-	private int delete(IAVLNode node) {
-		return 0;
-//
-//		IAVLNode replacement = this.getDeletedReplacement(node);
-//		int numRebalancing = 0;
-//		numRebalancing += this.delete(replacement);
-//		IAVLNode parent = this.replace(node, replacement);
+	private int recursiveDeleteRebalancing(IAVLNode parent, IAVLNode deleteReplacement) {
+		char otherDirection = 'L';
+		char deleteDirection = 'R';
+		int numRebalancing = 0;
+		if (parent.getLeft() == deleteReplacement) {
+			otherDirection = 'R';
+			deleteDirection = 'L';
+		}
+		// case 1: demote
+		if (parent.getHeight() - this.getChild(parent, deleteDirection).getHeight() == 2) {
+			numRebalancing = demote(parent);
+
+		}
+
+		// case 2-4:
+		if (parent.getHeight() - deleteReplacement.getHeight() == 3) {
+			IAVLNode other = this.getChild(parent,otherDirection);
+			// case 2: rotate, promote & demote
+			if ((other.getHeight() - other.getRight().getHeight() == 1) &&
+					(other.getHeight() - other.getLeft().getHeight() == 1)) {
+				numRebalancing += rotate(parent, other);
+				numRebalancing += demote(parent);
+				numRebalancing += promote(other);
+				// the only terminal rebalance;
+				return numRebalancing;
+			}
+			else if (other.getHeight() - getChild(other, deleteDirection).getHeight() == 2) {
+				numRebalancing += rotate(parent, other);
+				numRebalancing += demote(parent);
+				numRebalancing += demote(parent);
+				parent = other;
+			}
+			else if (other.getHeight() - getChild(other, otherDirection).getHeight() == 2) {
+				numRebalancing += rotate(other, getChild(other, deleteDirection));
+				numRebalancing += demote(other);
+				other = other.getParent();
+				numRebalancing += promote(other);
+				numRebalancing += rotate(parent, other);
+				numRebalancing += demote(parent);
+				numRebalancing += demote(parent);
+				parent = other;
+			}
+		}
+
+		// continue recursively until we reach a balanced node
+		if (numRebalancing > 0) {
+			numRebalancing += recursiveDeleteRebalancing(parent.getParent(), parent);
+		}
+		return numRebalancing;
 	}
 
 	/**
@@ -416,7 +464,7 @@ public class AVLTree {
 	 * @param parent - parent node
 	 * @param child - child node
 	 */
-	private void rotate(IAVLNode parent, IAVLNode child) {
+	private int rotate(IAVLNode parent, IAVLNode child) {
 		if (parent.getRight() == child) {
 			parent.setRight(child.getLeft());
 			child.setLeft(parent);
@@ -424,6 +472,7 @@ public class AVLTree {
 			parent.setLeft(child.getRight());
 			child.setRight(parent);
 		}
+		return 1;
 	}
 
 	/**
@@ -604,5 +653,4 @@ public class AVLTree {
 			}
 		}
 	}
-
 }
