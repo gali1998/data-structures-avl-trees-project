@@ -86,6 +86,7 @@ public class AVLTree {
 		// first we delete like every BST
 		IAVLNode replacement = this.getDeletedReplacement(toDelete);
 		IAVLNode parent = this.replace(toDelete, replacement);
+		this.size--;
 		// rebalancing and returning the number of rebalancing operations
 		return this.recursiveDeleteRebalancing(parent, replacement);
 	}
@@ -516,6 +517,39 @@ public class AVLTree {
 				child.setLeft(node.getLeft());
 				node.setLeft(child.getLeft().getLeft());
 				child.setParent(node);
+		}
+	}
+
+
+	public boolean isBalanced() {
+		return isTreeBalanced(this.root);
+	}
+
+	public static boolean isTreeBalanced(IAVLNode root) {
+		if (root == null) {
+			return true;
+		}
+		boolean isNodeBalanced = isNodeBalanced(root);
+		if (!isNodeBalanced) {
+			System.out.println("Imbalanced Node!");
+			System.out.println("Key: " + root.getKey() + " Height: " + root.getHeight());
+			if (root.isRealNode()) {
+				System.out.println("Right Key: " + root.getRight().getKey() + " Height: " + root.getRight().getHeight());
+				System.out.println("Left Key: " + root.getLeft().getKey() + " Height: " + root.getLeft().getHeight());
+			}
+		}
+		return isNodeBalanced && isTreeBalanced(root.getRight()) && isTreeBalanced(root.getLeft());
+	}
+
+	public static boolean isNodeBalanced(IAVLNode node) {
+		if (node.isRealNode()) {
+			return ((node.getHeight() - node.getRight().getHeight() == 1) && (node.getHeight() - node.getLeft().getHeight() == 1)) ||
+					((node.getHeight() - node.getRight().getHeight() == 1) && (node.getHeight() - node.getLeft().getHeight() == 2)) ||
+					((node.getHeight() - node.getRight().getHeight() == 2) && (node.getHeight() - node.getLeft().getHeight() == 1));
+
+		}
+		else {
+			return ((node.getRight() == null) && (node.getLeft() == null));
 		}
 	}
 
