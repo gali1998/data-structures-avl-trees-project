@@ -1,6 +1,8 @@
 import java.util.Arrays;
 
 public class Tests {
+
+
     public static void delete(AVLTree t, int key, int expectedRebalancing) {
         int initialSize = t.size();
         int rebalancing = t.delete(key);
