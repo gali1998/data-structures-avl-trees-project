@@ -760,9 +760,6 @@ public class AVLTree {
 		IAVLNode x = y.getLeft();
 		IAVLNode z = x.getRight();
 		IAVLNode newParent = y.getParent();
-		if (y==this.root) {
-			this.root = x;
-		}
 		if (newParent != null) {
 			if (newParent.getRight() == y) {
 				newParent.setRight(x);
@@ -786,9 +783,6 @@ public class AVLTree {
 		IAVLNode z = x.getLeft();
 		IAVLNode newParent = y.getParent();
 
-		if (y==this.root) {
-			this.root = x;
-		}
 		if (newParent != null) {
 			if (newParent.getRight() == y) {
 				newParent.setRight(x);
