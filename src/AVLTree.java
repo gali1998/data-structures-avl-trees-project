@@ -181,6 +181,7 @@ public class AVLTree {
 		} else {
 			leaf.setLeft(node);
 		}
+		leaf.update();
 
 		node.setParent(leaf);
 
@@ -223,127 +224,154 @@ public class AVLTree {
 		if (toDelete == null) {
 			return -1;
 		}
-		// first we delete like every BST
-		IAVLNode replacement = this.getDeletedReplacement(toDelete);
-		IAVLNode parent = this.replace(toDelete, replacement);
+		IAVLNode unbalancedNode = this.bstDelete(toDelete);
 		this.size--;
 		if (k == this.min.getKey()) {
 			this.min = this.findMin();
 		}
-		if (k == this.min.getKey()) {
+		if (k == this.max.getKey()) {
 			this.max = this.findMax();
 		}
 		// rebalancing and returning the number of rebalancing operations
-		int numRebalancing = this.recursiveDeleteRebalancing(parent, replacement);
-		this.updatePath(replacement);
+		int numRebalancing = this.recursiveDeleteRebalancing(unbalancedNode);
+		this.updatePath(unbalancedNode);
 		return numRebalancing;
 	}
 
-//	private IAVLNode bstDelete(int k) {
-//		IAVLNode node = this.searchNode(k);
-//		if (node.getRight().isRealNode() && node.getLeft().isRealNode()) {
-//			this.getSucce
-//		}
-//	}
+	/**
+	 * delete a node from a BST given the node to delete
+	 * @param toDelete - the node to delete from the tree
+	 * @return the deepest (potentially) unbalanced node
+	 */
+	private IAVLNode bstDelete(IAVLNode toDelete) {
+		IAVLNode rebalancingStart = toDelete.getParent();
+		IAVLNode successor;
+		 // if we have a right child
+		if (toDelete.getRight().isRealNode() && toDelete.getLeft().isRealNode()) {
+			successor = toDelete.getRight();
+			// due to AVL tree balance maintenance, if we don't have a left child, we won't enter the loop.
+			// if we have a left child, we need to search for right's leftmost child - which will be a unary or leaf.
+			while (successor.getLeft().isRealNode()) {
+				successor = successor.getLeft();
+			}
+			// we return the successor's parent as the node to start from (deepest that may be unbalanced)
+			if (successor.getParent() != toDelete) {
+				rebalancingStart = successor.getParent();
+			}
+			successor.getParent().setLeft(successor.getRight());
+			successor.getRight().setParent(successor.getParent());
+			// In this case, since we have a binary node, and we replaced the content of the node to delete,
+			// we need to update the successor's height
+			successor.setHeight(toDelete.getHeight());
+			successor.setRank(toDelete.getRank());
+		} else if (toDelete.getRight().isRealNode()) {
+			successor = toDelete.getRight();
+			successor.setLeft(toDelete.getLeft());
+		} else { // if we don't have a right, we either take the left child as successor (unary node), or a virtual node.
+			successor = toDelete.getLeft();
+			if (successor.isRealNode()) {
+				successor.setRight(toDelete.getRight());
+			}
+		}
+		if (toDelete != this.root) {
+			if (toDelete.getParent().getRight() == toDelete) {
+				toDelete.getParent().setRight(successor);
+			} else {
+				toDelete.getParent().setLeft(successor);
+			}
+		}
+		if (successor.isRealNode()) {
+			if (successor != toDelete.getRight()) {
+				successor.setRight(toDelete.getRight());
+				toDelete.getRight().setParent(successor);
+			}
+			if (successor != toDelete.getLeft()) {
+				successor.setLeft(toDelete.getLeft());
+				toDelete.getLeft().setParent(successor);
+			}
+
+
+			successor.setParent(toDelete.getParent());
+			if (toDelete == this.root) {
+				this.root = successor;
+			}
+		} else {
+			if (toDelete == this.root) {
+				this.root = null;
+			}
+		}
+
+		return rebalancingStart;
+	}
 
 	/**
 	 * recursively apply rebalancing operations after deletion
-	 * @param parent - parent of the deleted node
-	 * @param deleteReplacement - the replacement node, AFTER it has been deleted from the tree and applied as
-	 *                            parent's child
+	 * @param unbalanced - the potentialy unbalanced node
 	 * @return # of rebalancing operations
 	 */
-	private int recursiveDeleteRebalancing(IAVLNode parent, IAVLNode deleteReplacement) {
-		char otherDirection = 'L';
-		char deleteDirection = 'R';
+	private int recursiveDeleteRebalancing(IAVLNode unbalanced) {
 		int numRebalancing = 0;
-		if (parent.getLeft() == deleteReplacement) {
-			otherDirection = 'R';
-			deleteDirection = 'L';
+		if (unbalanced == null) { // terminal case for root
+			return 0;
 		}
-		// case 1: demote
-		if (parent.getRankDifferenceByDir(deleteDirection) == 2) {
-			parent.demote();
+
+		// case 1
+		if ((unbalanced.rightRankDifference() == 2) && (unbalanced.leftRankDifference() == 2)) {
+			unbalanced.demote();
 			numRebalancing++;
 		}
 
-		// case 2-4:
-		if (parent.getRankDifferenceByDir(deleteDirection) == 3) {
-			IAVLNode other = parent.getChildByDir(otherDirection);
+		if ((unbalanced.rightRankDifference() == 3) || (unbalanced.leftRankDifference() == 3)) {
+			char deletedDir = 'L';
+			char otherDir = 'R';
+			if (unbalanced.rightRankDifference() == 3) {
+				deletedDir = 'R';
+				otherDir = 'L';
+			}
+			IAVLNode other = unbalanced.getChildByDir(otherDir);
 			// case 2: rotate, promote & demote
 			if ((other.rightRankDifference() == 1) &&
 					(other.leftRankDifference() == 1)) {
-				numRebalancing += rotate(parent, other);
-				parent.demote();
+				numRebalancing += rotate(unbalanced, other);
+				unbalanced.demote();
 				numRebalancing++;
 				other.promote();
 				numRebalancing++;
 				// the only terminal rebalance;
 				return numRebalancing;
 			}
-			else if (other.getRankDifferenceByDir(deleteDirection) == 2) {
-				numRebalancing += rotate(parent, other);
-				parent.demote();
+			// case 3: rotate, double demote
+			else if (other.getRankDifferenceByDir(deletedDir) == 2) {
+				numRebalancing += rotate(unbalanced, other);
+				unbalanced.demote();
 				numRebalancing++;
-				parent.demote();
+				unbalanced.demote();
 				numRebalancing++;
-				parent = other;
+				unbalanced = other;
 			}
-
-			else if (other.getRankDifferenceByDir(otherDirection) == 2) {
-				numRebalancing += rotate(other, other.getChildByDir(deleteDirection));
+			// case 4: double rotate,
+			else if (other.getRankDifferenceByDir(otherDir) == 2) {
+				numRebalancing += rotate(other, other.getChildByDir(deletedDir));
 				other.demote();
 				numRebalancing++;
 				other = other.getParent();
 				other.promote();
 				numRebalancing++;
-				numRebalancing += rotate(parent, other);
-				parent.demote();
+				numRebalancing += rotate(unbalanced, other);
+				unbalanced.demote();
 				numRebalancing++;
-				parent.demote();
+				unbalanced.demote();
 				numRebalancing++;
-				parent = other;
+				unbalanced = other;
 			}
 		}
 
 		// continue recursively until we reach a balanced node
 		if (numRebalancing > 0) {
-			numRebalancing += recursiveDeleteRebalancing(parent.getParent(), parent);
+			numRebalancing += recursiveDeleteRebalancing(unbalanced.getParent());
 		}
 		return numRebalancing;
 	}
-
-	/**
-	 * replacing node's place in the tree with replacement
-	 * @param node
-	 * @param replacement
-	 * @return prev(node.getParent())
-	 */
-	private IAVLNode replace(IAVLNode node, IAVLNode replacement) {
-		IAVLNode parent = node.getParent();
-		replacement.setParent(parent);
-		replacement.setRight(node.getRight());
-		replacement.setLeft(node.getLeft());
-		if (node == this.root) {
-			return replacement;
-		}
-		if (parent.getKey() < node.getKey()) {
-			parent.setRight(replacement);
-		} else {
-			parent.setLeft(replacement);
-		}
-		return parent;
-	}
-
-//	private IAVLNode bstDelete(IAVLNode parent, int key) {
-//		IAVLNode toDelete = this.searchNode(parent ,key);
-//		IAVLNode replacement = this.getDeletedReplacement(toDelete);
-//		if (replacement.isRealNode()) {
-//			bstDelete(replacement, replacement.getKey());
-//		}
-//		replace(toDelete, replacement);
-//		return replacement;
-//	}
 
 	/**
 	 * helper function for delete, getting the node to delete replacement
@@ -425,7 +453,7 @@ public class AVLTree {
 		
 		IAVLNode node = this.getRoot();
 
-		while (node.getLeft() != null) {
+		while ((node.getLeft() != null) && (node.getLeft().isRealNode())) {
 			node = node.getLeft();
 		}
 
@@ -439,7 +467,7 @@ public class AVLTree {
 
 		IAVLNode node = this.getRoot();
 
-		while (node.getRight() != null) {
+		while ((node.getRight() != null) && (node.getRight().isRealNode())) {
 			node = node.getRight();
 		}
 
@@ -593,9 +621,10 @@ public class AVLTree {
 			shortDir = 'L';
 			tallDir = 'R';
 		}
-		IAVLNode curr = taller;
-		while (curr.getHeight() > shorter.getHeight()) {
-			curr = curr.getLeft();
+
+		// We search for a subtree of taller, with taller.height == shorter.height || taller.height == shorter.height - 1
+		while (taller.getHeight() > shorter.getHeight()) {
+			taller = taller.getLeft();
 			complexity++; // increasing complexity for every node we visit.
 		}
 		x.setHeight(shorter.getHeight() + 1);
@@ -608,6 +637,7 @@ public class AVLTree {
 			// x 'tall side' child is 2 ranks below x -> we need to rebalance
 			if (x.getHeight() - x.getChildByDir(tallDir).getHeight() == 2) {
 				rotate(x.getParent(), x);
+				x.promote();
 			}
 			// x 'short side' child is 2 ranks below x -> we need to rebalance
 			else if (x.getHeight() - x.getChildByDir(shortDir).getHeight() == 2) {
@@ -636,6 +666,17 @@ public class AVLTree {
 			parent.setLeft(child.getRight());
 			child.setRight(parent);
 		}
+		if (parent.getParent() != null) {
+			if (parent.getParent().getRight() == parent) {
+				parent.getParent().setRight(child);
+			} else {
+				parent.getParent().setLeft(child);
+			}
+		} else {
+			this.root = child;
+		}
+		child.setParent(parent.getParent());
+		parent.setParent(child);
 		return 1;
 	}
 
@@ -845,6 +886,8 @@ public class AVLTree {
 		public void setChildByDir(char dir, IAVLNode child);
 
 		public int getRankDifferenceByDir(char dir);
+
+		public void setRank(int rank);
 	}
 
 	/**
@@ -1021,6 +1064,9 @@ public class AVLTree {
 				default:
 					return -4; // completely un-achievable if tree is well maintained
 			}
+		}
+		public void setRank(int rank) {
+			this.rank = rank;
 		}
 	}
 	
