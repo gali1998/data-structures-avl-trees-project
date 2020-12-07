@@ -649,36 +649,7 @@ public class AVLTree {
 		return complexity;
 	}
 
-	/**
-	 * rotates a parent and child node (decides the rotation direction according to the child's direction)
-	 * if 'child' is not a direct child node of 'parent' - nothing happens.
-	 * @param parent - parent node
-	 * @param child - child node
-	 */
-	private int rotate(IAVLNode parent, IAVLNode child) {
-		if (parent == null) {
-			return 0;
-		}
-		if (parent.getRight() == child) {
-			parent.setRight(child.getLeft());
-			child.setLeft(parent);
-		} else if (parent.getLeft() == child) {
-			parent.setLeft(child.getRight());
-			child.setRight(parent);
-		}
-		if (parent.getParent() != null) {
-			if (parent.getParent().getRight() == parent) {
-				parent.getParent().setRight(child);
-			} else {
-				parent.getParent().setLeft(child);
-			}
-		} else {
-			this.root = child;
-		}
-		child.setParent(parent.getParent());
-		parent.setParent(child);
-		return 1;
-	}
+
 
 	public boolean isBalanced() {
 		return isTreeBalanced(this.root);
@@ -762,12 +733,36 @@ public class AVLTree {
 		return this.search(node.getLeft(), k);
 	}
 
+	/**
+	 * rotates a parent and child node (decides the rotation direction according to the child's direction)
+	 * if 'child' is not a direct child node of 'parent' - nothing happens.
+	 * @param parent - parent node
+	 * @param child - child node
+	 */
+	private int rotate(IAVLNode parent, IAVLNode child) {
+		if (parent == null) {
+			return 0;
+		}
+		if (parent == this.root) {
+			this.root = child;
+		}
+		if (parent.getRight() == child) {
+			this.rotateLeft(parent);
+			return 1;
+		} else if (parent.getLeft() == child) {
+			this.rotateRight(parent);
+			return 1;
+		}
+		return 0;
+	}
 	// Rotate right a tree rooted at y
 	public IAVLNode rotateRight(IAVLNode y) { // Complexity: O(1)
 		IAVLNode x = y.getLeft();
 		IAVLNode z = x.getRight();
 		IAVLNode newParent = y.getParent();
-		
+		if (y==this.root) {
+			this.root = x;
+		}
 		if (newParent != null) {
 			if (newParent.getRight() == y) {
 				newParent.setRight(x);
@@ -787,11 +782,13 @@ public class AVLTree {
 
 	// Rotate left a tree rooted at y
 	public IAVLNode rotateLeft(IAVLNode y) { // Complexity: O(1)
-		
 		IAVLNode x = y.getRight();
 		IAVLNode z = x.getLeft();
 		IAVLNode newParent = y.getParent();
-		
+
+		if (y==this.root) {
+			this.root = x;
+		}
 		if (newParent != null) {
 			if (newParent.getRight() == y) {
 				newParent.setRight(x);
