@@ -646,7 +646,95 @@ public class IAVLNodeTests {
         return works;
     }
 
+    public boolean joinCase1() {
+//        this.tree.insert(3, "3");
+//        this.tree.insert(2, "2");
+//        this.tree.insert(4, "4");
+//        this.tree.insert(1, "1");
+//        this.tree.insert(5, "5");
+        for (int i = 11; i <= 20; i++) {
+            this.tree.insert(i, String.valueOf(i));
+        }
 
+//        AVLTree.print2D(this.tree.getRoot());
+
+        this.size = 16;
+        this.min = 0;
+        this.max = 20;
+//        int root = 4;
+
+        AVLTree lesser = new AVLTree();
+        for (int i = 0; i < 5; i++) {
+            lesser.insert(i, String.valueOf(i));
+        }
+        int expected = this.tree.getRoot().getRank() - lesser.getRoot().getRank() + 1;
+//        AVLTree.print2D(lesser.getRoot());
+        int complexity = this.tree.join(this.tree.createNode(10, "10"), lesser);
+
+//        AVLTree.print2D(this.tree.getRoot());
+        this.values = new LinkedList<>();
+        for (int key: this.tree.keysToArray()) {
+            this.values.add(key);
+        }
+
+        if (complexity != expected) {
+            System.out.println("Bad complexity!, recieved " + complexity + " expected " + expected);
+            return false;
+        }
+
+
+        if (this.tree.isBST() == false) {
+            return false;
+        }
+
+        if (this.tree.isBalanced(this.tree.root) == false) {
+            return false;
+        }
+
+//        if (this.tree.getRoot().getKey() != root) {
+//            System.out.println("Error with new key, recieved " + this.tree.getRoot().getKey());
+//            return false;
+//        }
+
+        if (this.size != this.tree.size) {
+            return false;
+        }
+
+        if (this.min != this.tree.min.getKey()) {
+            return false;
+        }
+
+        if (this.max != this.tree.max.getKey()) {
+
+            return false;
+        }
+
+        if (this.checkSearch() == false) {
+            return false;
+        }
+
+        int[] keys = this.tree.keysToArray();
+
+        if (keys.length != this.size) {
+            return false;
+        }
+
+        for (int i = 0; i < keys.length; i++) {
+            if (!this.values.contains(keys[i])) {
+                return false;
+            }
+        }
+
+        if (!this.checkMin()) {
+            return false;
+        }
+
+        if (!getInfo(this.tree)) {
+            return false;
+        }
+
+        return true;
+    }
 
     public static void main(String[] args) {
         IAVLNodeTests tests = new IAVLNodeTests();
@@ -696,6 +784,12 @@ public class IAVLNodeTests {
             System.out.println("delete case 4 is ok");
         }
 
+
+        tests = new IAVLNodeTests();
+
+        if (tests.joinCase1()) {
+            System.out.println("join case 1 is ok");
+        }
 
         System.out.println("done");
 

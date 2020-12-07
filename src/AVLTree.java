@@ -608,47 +608,73 @@ public class AVLTree {
 	 * keys(). t/tree might be empty (rank = -1). postcondition: none
 	 */
 	public int join(IAVLNode x, AVLTree t) {
+		// first we set up the trees orientation for the symmetric implementation
+		//	which tree is taller and which is shorter?
+		// 	which tree's keys are bigger and which are smaller?
+		// we also set the new min\max for the joined tree
 		int complexity = 1;
-		char shortDir = 'R';
-		char tallDir = 'L';
-		IAVLNode shorter = this.getRoot();
-		IAVLNode taller = t.getRoot();
-		if (shorter.getHeight() > taller.getHeight()) {
-			shorter = t.getRoot();
-			taller = t.getRoot();
+		AVLTree tallerTree = t;
+		AVLTree shorterTree = this;
+		if (shorterTree.getRoot().getHeight() > tallerTree.getRoot().getHeight()) {
+			tallerTree = this;
+			shorterTree = t;
 		}
+		IAVLNode shorter = shorterTree.getRoot();
+		IAVLNode taller = tallerTree.getRoot();
+
+		char shortDir;
+		char tallDir;
 		if (shorter.getKey() < taller.getKey()) {
 			shortDir = 'L';
 			tallDir = 'R';
+			this.max = tallerTree.max;
+			this.min = shorterTree.min;
+		} else {
+			shortDir = 'R';
+			tallDir = 'L';
+			this.max = shorterTree.max;
+			this.min = tallerTree.min;
 		}
+		this.size += t.size() + 1;
 
 		// We search for a subtree of taller, with taller.height == shorter.height || taller.height == shorter.height - 1
 		while (taller.getHeight() > shorter.getHeight()) {
-			taller = taller.getLeft();
+			taller = taller.getChildByDir(shortDir);
 			complexity++; // increasing complexity for every node we visit.
 		}
-		x.setHeight(shorter.getHeight() + 1);
-		x.setParent(taller.getParent());
-		taller.getParent().setChildByDir(shortDir, x);
+		x.setRank(shorter.getRank() + 1);
+		IAVLNode parent = taller.getParent();
 		x.setChildByDir(shortDir, shorter);
+		shorter.setParent(x);
 		x.setChildByDir(tallDir, taller);
-		// We need to rebalance
-		if (x.getHeight() == x.getParent().getHeight()) {
-			// x 'tall side' child is 2 ranks below x -> we need to rebalance
-			if (x.getHeight() - x.getChildByDir(tallDir).getHeight() == 2) {
-				rotate(x.getParent(), x);
-				x.promote();
+		taller.setParent(x);
+
+		if (parent != null) {
+			parent.setChildByDir(shortDir, x);
+			// rebalancing is necessary only if parent.rank == x.rank -> parent.otherChild.rank == 2, so we have only
+			// the two terminal rebalancing cases
+			if (parent.getRankDifferenceByDir(shortDir) == 0) {
+				// single rotate:
+				if (x.getRankDifferenceByDir(tallDir) == 2) {
+					rotate(parent, x);
+					parent.demote();
+				}
+				// double rotate:
+				else if (x.getRankDifferenceByDir(shortDir) == 2) {
+					IAVLNode xTall = x.getChildByDir(tallDir);
+					rotate(x, xTall);
+					rotate(parent, xTall);
+					x.demote();
+					parent.demote();
+					xTall.promote();
+				}
 			}
-			// x 'short side' child is 2 ranks below x -> we need to rebalance
-			else if (x.getHeight() - x.getChildByDir(shortDir).getHeight() == 2) {
-				IAVLNode xTall = x.getChildByDir(tallDir);
-				rotate(x, xTall);
-				rotate(xTall.getParent(), xTall);
-			}
+		} else {
+			this.root = x;
 		}
+		this.updatePath(x);
 		return complexity;
 	}
-
 
 
 	public boolean isBalanced() {
@@ -1030,19 +1056,13 @@ public class AVLTree {
 		public void setChildByDir(char dir, IAVLNode child) {
 			switch(dir) {
 				case 'R':
-					child.getRight().setParent(this.getRight());
-					this.getRight().setRight(child.getRight());
-					this.getRight().setParent(child);
-					child.setRight(this.getRight());
-					this.setRight(child.getRight().getRight());
+					this.setRight(child);
 					child.setParent(this);
+					break;
 				case 'L':
-					child.getLeft().setParent(this.getLeft());
-					this.getLeft().setLeft(child.getLeft());
-					this.getLeft().setParent(child);
-					child.setLeft(this.getLeft());
-					this.setLeft(child.getLeft().getLeft());
+					this.setLeft(child);
 					child.setParent(this);
+					break;
 			}
 		}
 
@@ -1109,4 +1129,8 @@ public class AVLTree {
         /* If we reach here then tree is not height-balanced */
         return false;
     }
+
+	public AVLNode createNode(int key, String val) {
+		return new AVLNode(key, val);
+	}
 }
