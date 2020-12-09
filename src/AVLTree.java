@@ -637,13 +637,14 @@ public class AVLTree {
 		}
 		this.size += t.size() + 1;
 
+        IAVLNode parent = null;
 		// We search for a subtree of taller, with taller.height == shorter.height || taller.height == shorter.height - 1
 		while (taller.getHeight() > shorter.getHeight()) {
+		    parent = taller;
 			taller = taller.getChildByDir(shortDir);
 			complexity++; // increasing complexity for every node we visit.
 		}
 		x.setRank(shorter.getRank() + 1);
-		IAVLNode parent = taller.getParent();
 		x.setChildByDir(shortDir, shorter);
 		shorter.setParent(x);
 		x.setChildByDir(tallDir, taller);

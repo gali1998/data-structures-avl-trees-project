@@ -736,6 +736,89 @@ public class IAVLNodeTests {
         return true;
     }
 
+    public boolean joinCase2() {
+        this.tree.insert(2, "2");
+        this.tree.insert(1, "1");
+
+//        AVLTree.print2D(this.tree.getRoot());
+
+        this.size = 4;
+        this.min = 1;
+        this.max = 4;
+//        int root = 4;
+
+        AVLTree greater = new AVLTree();
+        greater.insert(4, String.valueOf("4"));
+        int expected = this.tree.getRoot().getRank() - greater.getRoot().getRank() + 1;
+//        AVLTree.print2D(lesser.getRoot());
+        int complexity = this.tree.join(this.tree.createNode(3, "3"), greater);
+
+//        AVLTree.print2D(this.tree.getRoot());
+        this.values = new LinkedList<>();
+        for (int key: this.tree.keysToArray()) {
+            this.values.add(key);
+        }
+
+        if (complexity != expected) {
+            System.out.println("Bad complexity!, recieved " + complexity + " expected " + expected);
+            return false;
+        }
+
+
+        if (this.tree.isBST() == false) {
+            return false;
+        }
+
+        if (this.tree.isBalanced(this.tree.root) == false) {
+            return false;
+        }
+
+//        if (this.tree.getRoot().getKey() != root) {
+//            System.out.println("Error with new key, recieved " + this.tree.getRoot().getKey());
+//            return false;
+//        }
+
+        if (this.size != this.tree.size) {
+            return false;
+        }
+
+        if (this.min != this.tree.min.getKey()) {
+            return false;
+        }
+
+        if (this.max != this.tree.max.getKey()) {
+
+            return false;
+        }
+
+        if (this.checkSearch() == false) {
+            return false;
+        }
+
+        int[] keys = this.tree.keysToArray();
+
+        if (keys.length != this.size) {
+            return false;
+        }
+
+        for (int i = 0; i < keys.length; i++) {
+            if (!this.values.contains(keys[i])) {
+                return false;
+            }
+        }
+
+        if (!this.checkMin()) {
+            return false;
+        }
+
+        if (!getInfo(this.tree)) {
+            return false;
+        }
+
+        return true;
+
+    }
+
     public static void main(String[] args) {
         IAVLNodeTests tests = new IAVLNodeTests();
 
@@ -789,6 +872,12 @@ public class IAVLNodeTests {
 
         if (tests.joinCase1()) {
             System.out.println("join case 1 is ok");
+        }
+
+        tests = new IAVLNodeTests();
+
+        if (tests.joinCase2()) {
+            System.out.println("join case 2 is ok");
         }
 
         System.out.println("done");
