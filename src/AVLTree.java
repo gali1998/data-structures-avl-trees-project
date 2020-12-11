@@ -17,6 +17,15 @@ public class AVLTree {
 	IAVLNode min;
 	IAVLNode max;
 
+	public AVLTree() {
+		IAVLNode virtualNode = new AVLNode();
+		this.root = virtualNode;
+		this.min = null;
+		this.max = null;
+		this.size = 0;
+
+	}
+
 	/**
 	 * public boolean empty()
 	 *
@@ -24,7 +33,7 @@ public class AVLTree {
 	 *
 	 */
 	public boolean empty() { // Complexity: O(1)
-		return this.root == null;
+		return !this.root.isRealNode();
 	}
 
 	/**
@@ -232,10 +241,18 @@ public class AVLTree {
 		if (k == this.max.getKey()) {
 			this.max = this.findMax();
 		}
-		// rebalancing and returning the number of rebalancing operations
-		int numRebalancing = this.recursiveDeleteRebalancing(unbalancedNode);
-		this.updatePath(unbalancedNode);
-		return numRebalancing;
+		if (this.size == 0) {
+			this.root = new AVLNode();
+			this.min = null;
+			this.max = null;
+			return 0;
+		}
+		else {
+			// rebalancing and returning the number of rebalancing operations
+			int numRebalancing = this.recursiveDeleteRebalancing(unbalancedNode);
+			this.updatePath(unbalancedNode);
+			return numRebalancing;
+		}
 	}
 
 	/**
@@ -371,26 +388,6 @@ public class AVLTree {
 			numRebalancing += recursiveDeleteRebalancing(unbalanced.getParent());
 		}
 		return numRebalancing;
-	}
-
-	/**
-	 * helper function for delete, getting the node to delete replacement
-	 * @param node
-	 * @return if node is a leaf - a virtual node
-	 * 		   if node is a unary node - it's child
-	 * 		   if node is a binary node - it's successor
-	 */
-	private IAVLNode getDeletedReplacement(IAVLNode node) {
-		if (!node.getRight().isRealNode()) {
-			return node.getLeft();
-		} else {
-			// getting the successor
-			IAVLNode successor = node.getRight();
-			while (successor.getLeft().isRealNode()) {
-				successor = successor.getLeft();
-			}
-			return successor;
-		}
 	}
 
 	/**
@@ -608,11 +605,37 @@ public class AVLTree {
 	 * keys(). t/tree might be empty (rank = -1). postcondition: none
 	 */
 	public int join(IAVLNode x, AVLTree t) {
+		// first, if any of the trees
+		int complexity = 1;
+		// If both trees are empty
+		if ((t.empty()) || (this.empty())) {
+			if (x.isRealNode()) {
+				if ((t.empty()) && (this.empty())) {
+					this.insertNodeToBinaryTree(x, x.getKey());
+					this.max = x;
+					this.min = x;
+					this.size++;
+				} else if (this.empty()) {
+					// we increase the complexity for the height (due to the insert) and add 1 for the actual insert action
+					complexity += t.getRoot().getRank() + 1;
+					t.insert(x.getKey(), x.getValue());
+					this.size = t.size;
+					this.root = t.root;
+					this.min = t.min;
+					this.max = t.max;
+				} else if (t.empty()) {
+					// we increase the complexity for the height (due to the insert) and add 1 for the actual insert action
+					complexity += this.getRoot().getRank() + 1;
+					this.insert(x.getKey(), x.getValue());
+				}
+			}
+			return complexity;
+		}
+
 		// first we set up the trees orientation for the symmetric implementation
 		//	which tree is taller and which is shorter?
 		// 	which tree's keys are bigger and which are smaller?
 		// we also set the new min\max for the joined tree
-		int complexity = 1;
 		AVLTree tallerTree = t;
 		AVLTree shorterTree = this;
 		if (shorterTree.getRoot().getHeight() > tallerTree.getRoot().getHeight()) {
@@ -629,6 +652,7 @@ public class AVLTree {
 			tallDir = 'R';
 			this.max = tallerTree.max;
 			this.min = shorterTree.min;
+
 		} else {
 			shortDir = 'R';
 			tallDir = 'L';
