@@ -668,38 +668,52 @@ public class AVLTree {
 			taller = taller.getChildByDir(shortDir);
 			complexity++; // increasing complexity for every node we visit.
 		}
+        x.setParent(parent);
 		x.setRank(shorter.getRank() + 1);
 		x.setChildByDir(shortDir, shorter);
 		shorter.setParent(x);
 		x.setChildByDir(tallDir, taller);
 		taller.setParent(x);
 
-		if (parent != null) {
-			parent.setChildByDir(shortDir, x);
-			// rebalancing is necessary only if parent.rank == x.rank -> parent.otherChild.rank == 2, so we have only
-			// the two terminal rebalancing cases
-			if (parent.getRankDifferenceByDir(shortDir) == 0) {
-				// single rotate:
-				if (x.getRankDifferenceByDir(tallDir) == 2) {
-					rotate(parent, x);
-					parent.demote();
-				}
-				// double rotate:
-				else if (x.getRankDifferenceByDir(shortDir) == 2) {
-					IAVLNode xTall = x.getChildByDir(tallDir);
-					rotate(x, xTall);
-					rotate(parent, xTall);
-					x.demote();
-					parent.demote();
-					xTall.promote();
-				}
-			}
-		} else {
-			this.root = x;
-		}
+        rebalanceAfterJoin(x, parent, tallDir, shortDir);
+
 		this.updatePath(x);
 		return complexity;
 	}
+
+	private void rebalanceAfterJoin(IAVLNode x, IAVLNode parent, char tallDir, char shortDir) {
+        if (parent != null) {
+            parent.setChildByDir(shortDir, x);
+            // rebalancing is necessary only if parent.rank == x.rank -> parent.otherChild.rank == 2, so we have only
+            // the two terminal rebalancing cases
+            if (parent.getRankDifferenceByDir(shortDir) == 0) {
+                // single rotate:
+                if (x.getRankDifferenceByDir(tallDir) == 2) {
+                    rotate(parent, x);
+                    parent.demote();
+                }
+                // double rotate:
+                else if (x.getRankDifferenceByDir(shortDir) == 2) {
+                    IAVLNode xTall = x.getChildByDir(tallDir);
+                    rotate(x, xTall);
+                    rotate(parent, xTall);
+                    x.demote();
+                    parent.demote();
+                    xTall.promote();
+                    x = xTall;
+                }
+                // both x children have equal rank
+                else {
+                    rotate(parent, x);
+                    x.promote();
+                }
+                // we need to redo rebalance of x in case the new parent is now in error.
+                rebalanceAfterJoin(x, x.getParent(), tallDir, shortDir);
+            }
+        } else {
+            this.root = x;
+        }
+    }
 
 
 	public boolean isBalanced() {
@@ -811,18 +825,19 @@ public class AVLTree {
 		IAVLNode x = y.getLeft();
 		IAVLNode z = x.getRight();
 		IAVLNode newParent = y.getParent();
-		if (newParent != null) {
-			if (newParent.getRight() == y) {
-				newParent.setRight(x);
-			} else {
-				newParent.setLeft(x);
-			}
-		}
 
-		x.setRight(y);
+        y.setLeft(z);
+        z.setParent(y);
 		y.setParent(x);
-		y.setLeft(z);
-		z.setParent(y);
+        x.setRight(y);
+
+        if (newParent != null) {
+            if (newParent.getRight() == y) {
+                newParent.setRight(x);
+            } else {
+                newParent.setLeft(x);
+            }
+        }
 		x.setParent(newParent);
 
 		return x;
@@ -834,19 +849,19 @@ public class AVLTree {
 		IAVLNode z = x.getLeft();
 		IAVLNode newParent = y.getParent();
 
-		if (newParent != null) {
-			if (newParent.getRight() == y) {
-				newParent.setRight(x);
-			} else {
-				newParent.setLeft(x);
-			}
-		}
-
-		x.setLeft(y);
+        y.setRight(z);
+        z.setParent(y);
 		y.setParent(x);
-		y.setRight(z);
-		z.setParent(y);
-		x.setParent(newParent);
+        x.setLeft(y);
+
+        if (newParent != null) {
+            if (newParent.getRight() == y) {
+                newParent.setRight(x);
+            } else {
+                newParent.setLeft(x);
+            }
+        }
+        x.setParent(newParent);
 
 		return x;
 
