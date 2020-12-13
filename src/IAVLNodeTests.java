@@ -1075,7 +1075,7 @@ public class IAVLNodeTests {
 
         AVLTree.IAVLNode x = t.createNode(5, "5");
         int complexity = this.tree.join(x, t);
-        AVLTree.print2D(this.tree.getRoot());
+//        AVLTree.print2D(this.tree.getRoot());
 
         this.size = 6;
         this.min = 4;
