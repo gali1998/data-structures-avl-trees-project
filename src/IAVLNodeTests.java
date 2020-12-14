@@ -570,6 +570,467 @@ public class IAVLNodeTests {
         return true;
     }
 
+    private boolean deleteCaseNonEmptyRoot() {
+        this.tree.insert(3, "3");
+        this.tree.insert(2, "2");
+        this.tree.insert(4, "4");
+
+        this.size = this.tree.size - 1;
+        this.min = 2;
+        this.max = 4;
+        int root = 4;
+
+        int comp = this.tree.delete(3);
+        if (comp != 0) {
+            System.out.println("bad complexity " + comp);
+            return false;
+        }
+//        comp += this.tree.delete(1);
+
+        this.values = new LinkedList<>();
+        for (int key: this.tree.keysToArray()) {
+            this.values.add(key);
+        }
+
+        if (this.tree.isBST() == false) {
+            return false;
+        }
+
+        if (this.tree.isBalanced(this.tree.root) == false) {
+            return false;
+        }
+
+        if (this.tree.getRoot().getKey() != root) {
+            System.out.println("Error with new key, recieved " + this.tree.getRoot().getKey());
+            return false;
+        }
+
+        if (this.size != this.tree.size) {
+            return false;
+        }
+
+        if (this.min != this.tree.min.getKey()) {
+            return false;
+        }
+
+        if (this.max != this.tree.max.getKey()) {
+
+            return false;
+        }
+
+        if (this.checkSearch() == false) {
+            return false;
+        }
+
+        int[] keys = this.tree.keysToArray();
+
+        if (keys.length != this.size) {
+            return false;
+        }
+
+        for (int i = 0; i < keys.length; i++) {
+            if (!this.values.contains(keys[i])) {
+                return false;
+            }
+        }
+
+        if (!this.checkMin()) {
+            return false;
+        }
+
+        if (!getInfo(this.tree)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean deleteCaseEverythingInOrder() {
+        for (int i = 0; i < 39; i++) {
+            this.tree.insert(i, String.valueOf(i));
+        }
+
+        for (int i = 0; i <39; i++) {
+            this.size = this.tree.size() - 1;
+            this.max = 38;
+            this.min = i+1;
+            this.tree.delete(i);
+
+            this.values = new LinkedList<>();
+            for (int key: this.tree.keysToArray()) {
+                this.values.add(key);
+            }
+
+            if (this.tree.isBST() == false) {
+                return false;
+            }
+
+            if (this.tree.isBalanced(this.tree.root) == false) {
+                return false;
+            }
+
+            if (this.size != this.tree.size) {
+                return false;
+            }
+
+            if (i != 38) {
+                if (this.min != this.tree.min.getKey()) {
+                    return false;
+                }
+                if (this.max != this.tree.max.getKey()) {
+                    return false;
+                }
+            }
+
+            if (this.checkSearch() == false) {
+                return false;
+            }
+
+            int[] keys = this.tree.keysToArray();
+
+            if (keys.length != this.size) {
+                return false;
+            }
+
+            for (int j = 0; j < keys.length; j++) {
+                if (!this.values.contains(keys[j])) {
+                    return false;
+                }
+            }
+
+            if (!getInfo(this.tree)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean deleteCaseAlwaysRoot() {
+        for (int i = 0; i < 39; i++) {
+            this.tree.insert(i, String.valueOf(i));
+        }
+
+        for (int i = 0; i <39; i++) {
+            this.size = this.tree.size() - 1;
+            this.max = 38;
+            this.min = 0;
+            int currLastRoot = this.tree.getRoot().getKey();
+            this.tree.delete(currLastRoot);
+
+            if (this.tree.search(currLastRoot) != null) {
+                return false;
+            }
+
+            this.values = new LinkedList<>();
+            for (int key: this.tree.keysToArray()) {
+                this.values.add(key);
+            }
+
+            if (this.tree.isBST() == false) {
+                return false;
+            }
+
+            if (this.tree.isBalanced(this.tree.root) == false) {
+                AVLTree.print2D(this.tree.getRoot());
+                return false;
+            }
+
+            if (this.size != this.tree.size) {
+                return false;
+            }
+
+            if (i < 37) {
+                if (this.min != this.tree.min.getKey()) {
+                    return false;
+                }
+                if (this.max != this.tree.max.getKey()) {
+                    return false;
+                }
+            }
+
+            if (this.checkSearch() == false) {
+                return false;
+            }
+
+            int[] keys = this.tree.keysToArray();
+
+            if (keys.length != this.size) {
+                return false;
+            }
+
+            for (int j = 0; j < keys.length; j++) {
+                if (!this.values.contains(keys[j])) {
+                    return false;
+                }
+            }
+
+            if (!getInfo(this.tree)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean deleteCaseEverythingReverseOrder() {
+        for (int i = 0; i < 39; i++) {
+            this.tree.insert(i, String.valueOf(i));
+        }
+
+        for (int i = 38; i >= 0; i--) {
+            this.size = this.tree.size() - 1;
+            this.max = i-1;
+            this.min = 0;
+            this.tree.delete(i);
+
+            this.values = new LinkedList<>();
+            for (int key: this.tree.keysToArray()) {
+                this.values.add(key);
+            }
+
+            if (this.tree.isBST() == false) {
+                return false;
+            }
+
+            if (this.tree.isBalanced(this.tree.root) == false) {
+                return false;
+            }
+
+            if (this.size != this.tree.size) {
+                return false;
+            }
+
+            if (i != 0) {
+                if (this.min != this.tree.min.getKey()) {
+                    return false;
+                }
+                if (this.max != this.tree.max.getKey()) {
+                    return false;
+                }
+            }
+
+            if (this.checkSearch() == false) {
+                return false;
+            }
+
+            int[] keys = this.tree.keysToArray();
+
+            if (keys.length != this.size) {
+                return false;
+            }
+
+            for (int j = 0; j < keys.length; j++) {
+                if (!this.values.contains(keys[j])) {
+                    return false;
+                }
+            }
+
+            if (!getInfo(this.tree)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean deleteCaseLeftRoot() {
+        this.tree.insert(3, "3");
+        this.tree.insert(2, "2");
+        this.tree.insert(4, "4");
+
+        this.size = this.tree.size - 1;
+        this.min = 3;
+        this.max = 4;
+        int root = 3;
+
+        int comp = this.tree.delete(2);
+        if (comp != 0) {
+            System.out.println("bad complexity " + comp);
+            return false;
+        }
+//        comp += this.tree.delete(1);
+
+        this.values = new LinkedList<>();
+        for (int key: this.tree.keysToArray()) {
+            this.values.add(key);
+        }
+
+        if (this.tree.isBST() == false) {
+            return false;
+        }
+
+        if (this.tree.isBalanced(this.tree.root) == false) {
+            return false;
+        }
+
+        if (this.tree.getRoot().getKey() != root) {
+            System.out.println("Error with new key, recieved " + this.tree.getRoot().getKey());
+            return false;
+        }
+
+        if (this.size != this.tree.size) {
+            return false;
+        }
+
+        if (this.min != this.tree.min.getKey()) {
+            return false;
+        }
+
+        if (this.max != this.tree.max.getKey()) {
+
+            return false;
+        }
+
+        if (this.checkSearch() == false) {
+            return false;
+        }
+
+        int[] keys = this.tree.keysToArray();
+
+        if (keys.length != this.size) {
+            return false;
+        }
+
+        for (int i = 0; i < keys.length; i++) {
+            if (!this.values.contains(keys[i])) {
+                return false;
+            }
+        }
+
+        if (!this.checkMin()) {
+            return false;
+        }
+
+        if (!getInfo(this.tree)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean deleteCaseRightRoot() {
+        this.tree.insert(3, "3");
+        this.tree.insert(2, "2");
+        this.tree.insert(4, "4");
+
+        this.size = this.tree.size - 1;
+        this.min = 2;
+        this.max = 3;
+        int root = 3;
+
+        int comp = this.tree.delete(4);
+        if (comp != 0) {
+            System.out.println("bad complexity " + comp);
+            return false;
+        }
+//        comp += this.tree.delete(1);
+
+        this.values = new LinkedList<>();
+        for (int key: this.tree.keysToArray()) {
+            this.values.add(key);
+        }
+
+        if (this.tree.isBST() == false) {
+            return false;
+        }
+
+        if (this.tree.isBalanced(this.tree.root) == false) {
+            return false;
+        }
+
+        if (this.tree.getRoot().getKey() != root) {
+            System.out.println("Error with new key, recieved " + this.tree.getRoot().getKey());
+            return false;
+        }
+
+        if (this.size != this.tree.size) {
+            return false;
+        }
+
+        if (this.min != this.tree.min.getKey()) {
+            return false;
+        }
+
+        if (this.max != this.tree.max.getKey()) {
+
+            return false;
+        }
+
+        if (this.checkSearch() == false) {
+            return false;
+        }
+
+        int[] keys = this.tree.keysToArray();
+
+        if (keys.length != this.size) {
+            return false;
+        }
+
+        for (int i = 0; i < keys.length; i++) {
+            if (!this.values.contains(keys[i])) {
+                return false;
+            }
+        }
+
+        if (!this.checkMin()) {
+            return false;
+        }
+
+        if (!getInfo(this.tree)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean deleteCaseRoot() {
+        this.tree.insert(3, "3");
+
+
+        this.size = this.tree.size - 1;
+
+        int comp = this.tree.delete(3);
+        if (comp != 0) {
+            System.out.println("bad complexity " + comp);
+            return false;
+        }
+//        comp += this.tree.delete(1);
+
+        this.values = new LinkedList<>();
+        for (int key: this.tree.keysToArray()) {
+            this.values.add(key);
+        }
+
+        if (this.tree.isBST() == false) {
+            return false;
+        }
+
+        if (this.tree.isBalanced(this.tree.root) == false) {
+            return false;
+        }
+
+
+        if (this.checkSearch() == false) {
+            return false;
+        }
+
+        int[] keys = this.tree.keysToArray();
+
+        if (keys.length != this.size) {
+            return false;
+        }
+
+        for (int i = 0; i < keys.length; i++) {
+            if (!this.values.contains(keys[i])) {
+                return false;
+            }
+        }
+
+        if (!getInfo(this.tree)) {
+            return false;
+        }
+
+        return true;
+    }
+
     private boolean testSortedBackwardsTree() {
         this.insertSortedTreeBackwards();
 
@@ -1147,6 +1608,518 @@ public class IAVLNodeTests {
 
     }
 
+    public boolean joinCaseThisTallerBigger() {
+        AVLTree t = new AVLTree();
+
+        for (int i = 40; i < 80; i++) {
+            this.tree.insert(i, String.valueOf(i));
+        }
+
+        for (int i = 0; i < 20; i++) {
+            t.insert(i, String.valueOf(i));
+        }
+
+        this.size = this.tree.size() + t.size() + 1;
+        this.min = t.min.getKey();
+        this.max = this.tree.max.getKey();
+
+        int expected =  Math.abs(t.getRoot().getRank() - this.tree.getRoot().getRank()) + 1;
+
+        AVLTree.IAVLNode x = t.createNode(39, "39");
+        int complexity = this.tree.join(x, t);
+
+        this.values = new LinkedList<>();
+        for (int key: this.tree.keysToArray()) {
+            this.values.add(key);
+        }
+
+        if (complexity != expected) {
+            System.out.println("Bad complexity!, recieved " + complexity + " expected " + expected);
+            return false;
+        }
+
+
+        if (this.tree.isBST() == false) {
+            return false;
+        }
+
+        if (this.tree.isBalanced(this.tree.root) == false) {
+            return false;
+        }
+
+//        if (this.tree.getRoot().getKey() != root) {
+//            System.out.println("Error with new key, recieved " + this.tree.getRoot().getKey());
+//            return false;
+//        }
+
+        if (this.size != this.tree.size) {
+            return false;
+        }
+
+        if (this.min != this.tree.min.getKey()) {
+            return false;
+        }
+
+        if (this.max != this.tree.max.getKey()) {
+
+            return false;
+        }
+
+        if (this.checkSearch() == false) {
+            return false;
+        }
+
+        int[] keys = this.tree.keysToArray();
+
+        if (keys.length != this.size) {
+            return false;
+        }
+
+        for (int i = 0; i < keys.length; i++) {
+            if (!this.values.contains(keys[i])) {
+                return false;
+            }
+        }
+
+        if (!this.checkMin()) {
+            return false;
+        }
+
+        if (!getInfo(this.tree)) {
+            return false;
+        }
+
+        return true;
+
+    }
+
+    public boolean joinCaseThisShorterBigger() {
+        AVLTree t = new AVLTree();
+
+            for (int i = 40; i < 60; i++) {
+            this.tree.insert(i, String.valueOf(i));
+        }
+
+            for (int i = 0; i < 39; i++) {
+            t.insert(i, String.valueOf(i));
+        }
+
+            this.size = this.tree.size() + t.size() + 1;
+            this.min = t.min.getKey();
+            this.max = this.tree.max.getKey();
+
+        int expected =  Math.abs(t.getRoot().getRank() - this.tree.getRoot().getRank()) + 1;
+
+        AVLTree.IAVLNode x = t.createNode(39, "39");
+        int complexity = this.tree.join(x, t);
+
+            this.values = new LinkedList<>();
+            for (int key: this.tree.keysToArray()) {
+            this.values.add(key);
+        }
+
+            if (complexity != expected) {
+            System.out.println("Bad complexity!, recieved " + complexity + " expected " + expected);
+            return false;
+        }
+
+
+            if (this.tree.isBST() == false) {
+            return false;
+        }
+
+            if (this.tree.isBalanced(this.tree.root) == false) {
+            return false;
+        }
+
+    //        if (this.tree.getRoot().getKey() != root) {
+    //            System.out.println("Error with new key, recieved " + this.tree.getRoot().getKey());
+    //            return false;
+    //        }
+
+            if (this.size != this.tree.size) {
+            return false;
+        }
+
+            if (this.min != this.tree.min.getKey()) {
+            return false;
+        }
+
+            if (this.max != this.tree.max.getKey()) {
+
+            return false;
+        }
+
+            if (this.checkSearch() == false) {
+            return false;
+        }
+
+        int[] keys = this.tree.keysToArray();
+
+            if (keys.length != this.size) {
+            return false;
+        }
+
+            for (int i = 0; i < keys.length; i++) {
+            if (!this.values.contains(keys[i])) {
+                return false;
+            }
+        }
+
+            if (!this.checkMin()) {
+            return false;
+        }
+
+            if (!getInfo(this.tree)) {
+            return false;
+        }
+
+            return true;
+
+    }
+
+    public boolean joinCaseThisTallerSmaller() {
+        AVLTree t = new AVLTree();
+
+        for (int i = 0; i < 39; i++) {
+            this.tree.insert(i, String.valueOf(i));
+        }
+
+        for (int i = 40; i < 60; i++) {
+            t.insert(i, String.valueOf(i));
+        }
+
+        this.size = this.tree.size() + t.size() + 1;
+        this.min = this.tree.min.getKey();
+        this.max = t.max.getKey();
+
+        int expected =  Math.abs(t.getRoot().getRank() - this.tree.getRoot().getRank()) + 1;
+
+        AVLTree.IAVLNode x = t.createNode(39, "39");
+        int complexity = this.tree.join(x, t);
+
+        this.values = new LinkedList<>();
+        for (int key: this.tree.keysToArray()) {
+            this.values.add(key);
+        }
+
+        if (complexity != expected) {
+            System.out.println("Bad complexity!, recieved " + complexity + " expected " + expected);
+            return false;
+        }
+
+
+        if (this.tree.isBST() == false) {
+            return false;
+        }
+
+        if (this.tree.isBalanced(this.tree.root) == false) {
+            return false;
+        }
+
+        //        if (this.tree.getRoot().getKey() != root) {
+        //            System.out.println("Error with new key, recieved " + this.tree.getRoot().getKey());
+        //            return false;
+        //        }
+
+        if (this.size != this.tree.size) {
+            return false;
+        }
+
+        if (this.min != this.tree.min.getKey()) {
+            return false;
+        }
+
+        if (this.max != this.tree.max.getKey()) {
+
+            return false;
+        }
+
+        if (this.checkSearch() == false) {
+            return false;
+        }
+
+        int[] keys = this.tree.keysToArray();
+
+        if (keys.length != this.size) {
+            return false;
+        }
+
+        for (int i = 0; i < keys.length; i++) {
+            if (!this.values.contains(keys[i])) {
+                return false;
+            }
+        }
+
+        if (!this.checkMin()) {
+            return false;
+        }
+
+        if (!getInfo(this.tree)) {
+            return false;
+        }
+
+        return true;
+
+    }
+
+    public boolean joinCaseThisShorterSmaller()  {
+        AVLTree t = new AVLTree();
+
+        for (int i = 0; i < 20; i++) {
+            this.tree.insert(i, String.valueOf(i));
+        }
+
+        for (int i = 40; i < 80; i++) {
+            t.insert(i, String.valueOf(i));
+        }
+
+        this.size = this.tree.size() + t.size() + 1;
+        this.min = this.tree.min.getKey();
+        this.max = t.max.getKey();
+
+        int expected =  Math.abs(t.getRoot().getRank() - this.tree.getRoot().getRank()) + 1;
+
+        AVLTree.IAVLNode x = t.createNode(39, "39");
+        int complexity = this.tree.join(x, t);
+
+        this.values = new LinkedList<>();
+        for (int key: this.tree.keysToArray()) {
+            this.values.add(key);
+        }
+
+        if (complexity != expected) {
+            System.out.println("Bad complexity!, recieved " + complexity + " expected " + expected);
+            return false;
+        }
+
+
+        if (this.tree.isBST() == false) {
+            return false;
+        }
+
+        if (this.tree.isBalanced(this.tree.root) == false) {
+            return false;
+        }
+
+        //        if (this.tree.getRoot().getKey() != root) {
+        //            System.out.println("Error with new key, recieved " + this.tree.getRoot().getKey());
+        //            return false;
+        //        }
+
+        if (this.size != this.tree.size) {
+            return false;
+        }
+
+        if (this.min != this.tree.min.getKey()) {
+            return false;
+        }
+
+        if (this.max != this.tree.max.getKey()) {
+
+            return false;
+        }
+
+        if (this.checkSearch() == false) {
+            return false;
+        }
+
+        int[] keys = this.tree.keysToArray();
+
+        if (keys.length != this.size) {
+            return false;
+        }
+
+        for (int i = 0; i < keys.length; i++) {
+            if (!this.values.contains(keys[i])) {
+                return false;
+            }
+        }
+
+        if (!this.checkMin()) {
+            return false;
+        }
+
+        if (!getInfo(this.tree)) {
+            return false;
+        }
+
+        return true;
+
+    }
+
+    public boolean joinCaseCompletelyBalanced()  {
+        AVLTree t = new AVLTree();
+
+        for (int i = 0; i < 39; i++) {
+            this.tree.insert(i, String.valueOf(i));
+        }
+
+        for (int i = 40; i < 79; i++) {
+            t.insert(i, String.valueOf(i));
+        }
+
+        this.size = this.tree.size() + t.size() + 1;
+        this.min = this.tree.min.getKey();
+        this.max = t.max.getKey();
+        int root = 39;
+
+        int expected =  Math.abs(t.getRoot().getRank() - this.tree.getRoot().getRank()) + 1;
+
+        AVLTree.IAVLNode x = t.createNode(39, "39");
+        int complexity = this.tree.join(x, t);
+
+        this.values = new LinkedList<>();
+        for (int key: this.tree.keysToArray()) {
+            this.values.add(key);
+        }
+
+        if (complexity != expected) {
+            System.out.println("Bad complexity!, recieved " + complexity + " expected " + expected);
+            return false;
+        }
+
+
+        if (this.tree.isBST() == false) {
+            return false;
+        }
+
+        if (this.tree.isBalanced(this.tree.root) == false) {
+            return false;
+        }
+
+        if (this.tree.getRoot().getKey() != root) {
+            System.out.println("Error with new key, recieved " + this.tree.getRoot().getKey());
+            return false;
+        }
+
+        if (this.size != this.tree.size) {
+            return false;
+        }
+
+        if (this.min != this.tree.min.getKey()) {
+            return false;
+        }
+
+        if (this.max != this.tree.max.getKey()) {
+
+            return false;
+        }
+
+        if (this.checkSearch() == false) {
+            return false;
+        }
+
+        int[] keys = this.tree.keysToArray();
+
+        if (keys.length != this.size) {
+            return false;
+        }
+
+        for (int i = 0; i < keys.length; i++) {
+            if (!this.values.contains(keys[i])) {
+                return false;
+            }
+        }
+
+        if (!this.checkMin()) {
+            return false;
+        }
+
+        if (!getInfo(this.tree)) {
+            return false;
+        }
+
+        return true;
+
+    }
+
+    public boolean joinCaseCompletelyUnbalanced()  {
+        AVLTree t = new AVLTree();
+
+        for (int i = 0; i < 39; i++) {
+            this.tree.insert(i, String.valueOf(i));
+        }
+
+        for (int i = 40; i < 41; i++) {
+            t.insert(i, String.valueOf(i));
+        }
+
+        this.size = this.tree.size() + t.size() + 1;
+        this.min = this.tree.min.getKey();
+        this.max = t.max.getKey();
+
+        int expected =  Math.abs(t.getRoot().getRank() - this.tree.getRoot().getRank()) + 1;
+
+        AVLTree.IAVLNode x = t.createNode(39, "39");
+        int complexity = this.tree.join(x, t);
+
+        this.values = new LinkedList<>();
+        for (int key: this.tree.keysToArray()) {
+            this.values.add(key);
+        }
+
+        if (complexity != expected) {
+            System.out.println("Bad complexity!, recieved " + complexity + " expected " + expected);
+            return false;
+        }
+
+
+        if (this.tree.isBST() == false) {
+            return false;
+        }
+
+        if (this.tree.isBalanced(this.tree.root) == false) {
+            return false;
+        }
+
+        //        if (this.tree.getRoot().getKey() != root) {
+        //            System.out.println("Error with new key, recieved " + this.tree.getRoot().getKey());
+        //            return false;
+        //        }
+
+        if (this.size != this.tree.size) {
+            return false;
+        }
+
+        if (this.min != this.tree.min.getKey()) {
+            return false;
+        }
+
+        if (this.max != this.tree.max.getKey()) {
+
+            return false;
+        }
+
+        if (this.checkSearch() == false) {
+            return false;
+        }
+
+        int[] keys = this.tree.keysToArray();
+
+        if (keys.length != this.size) {
+            return false;
+        }
+
+        for (int i = 0; i < keys.length; i++) {
+            if (!this.values.contains(keys[i])) {
+                return false;
+            }
+        }
+
+        if (!this.checkMin()) {
+            return false;
+        }
+
+        if (!getInfo(this.tree)) {
+            return false;
+        }
+
+        return true;
+
+    }
+
+
 
 
     public static void main(String[] args) {
@@ -1197,6 +2170,49 @@ public class IAVLNodeTests {
             System.out.println("delete case 4 is ok");
         }
 
+        tests = new IAVLNodeTests();
+
+        if (tests.deleteCaseNonEmptyRoot() == true) {
+            System.out.println("delete case non empty root is ok");
+        }
+
+        tests = new IAVLNodeTests();
+
+        if (tests.deleteCaseLeftRoot() == true) {
+            System.out.println("delete case left root is ok");
+        }
+
+        tests = new IAVLNodeTests();
+
+        if (tests.deleteCaseRightRoot() == true) {
+            System.out.println("delete case right root is ok");
+        }
+
+        tests = new IAVLNodeTests();
+
+        if (tests.deleteCaseRoot() == true) {
+            System.out.println("delete case root is ok");
+        }
+
+        tests = new IAVLNodeTests();
+
+        if (tests.deleteCaseEverythingReverseOrder() == true) {
+            System.out.println("delete case everything reverse order is ok");
+        }
+
+        tests = new IAVLNodeTests();
+
+        if (tests.deleteCaseEverythingInOrder() == true) {
+            System.out.println("delete case everything in order is ok");
+        }
+
+        tests = new IAVLNodeTests();
+
+        if (tests.deleteCaseAlwaysRoot() == true) {
+            System.out.println("delete case always root is ok");
+        }
+
+
 
         tests = new IAVLNodeTests();
 
@@ -1232,6 +2248,44 @@ public class IAVLNodeTests {
 
         if (tests.joinCase3()) {
             System.out.println("join case 3 is ok");
+        }
+
+        System.out.println("########## NEW TESTS #############");
+
+        tests = new IAVLNodeTests();
+
+        if (tests.joinCaseThisTallerBigger()) {
+            System.out.println("join joinCaseThisTallerBigger is ok");
+        }
+
+        tests = new IAVLNodeTests();
+
+        if (tests.joinCaseThisShorterBigger()) {
+            System.out.println("join case joinCaseThisShorterBigger is ok");
+        }
+
+        tests = new IAVLNodeTests();
+
+        if (tests.joinCaseThisTallerSmaller()) {
+            System.out.println("join case joinCaseThisTallerSmaller is ok");
+        }
+
+        tests = new IAVLNodeTests();
+
+        if (tests.joinCaseThisShorterSmaller()) {
+            System.out.println("join case joinCaseThisShorterSmaller is ok");
+        }
+
+        tests = new IAVLNodeTests();
+
+        if (tests.joinCaseCompletelyBalanced()) {
+            System.out.println("join case joinCaseCompletelyBalanced is ok");
+        }
+
+        tests = new IAVLNodeTests();
+
+        if (tests.joinCaseCompletelyUnbalanced()) {
+            System.out.println("join case joinCaseCompletelyUnbalanced is ok");
         }
 
         System.out.println("done");

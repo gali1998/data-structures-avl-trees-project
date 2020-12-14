@@ -274,9 +274,9 @@ public class AVLTree {
 			// we return the successor's parent as the node to start from (deepest that may be unbalanced)
 			if (successor.getParent() != toDelete) {
 				rebalancingStart = successor.getParent();
+                successor.getParent().setLeft(successor.getRight());
+                successor.getRight().setParent(successor.getParent());
 			}
-			successor.getParent().setLeft(successor.getRight());
-			successor.getRight().setParent(successor.getParent());
 			// In this case, since we have a binary node, and we replaced the content of the node to delete,
 			// we need to update the successor's height
 			successor.setHeight(toDelete.getHeight());
@@ -296,21 +296,19 @@ public class AVLTree {
                 toDelete.getLeft().setParent(successor);
             }
             successor.setParent(toDelete.getParent());
-            if (toDelete == this.root) {
-                this.root = successor;
-            }
-        } else {
-            if (toDelete == this.root) {
-                this.root = null;
-            }
         }
-		if (toDelete != this.root) {
-			if (toDelete.getParent().getRight() == toDelete) {
-				toDelete.getParent().setRight(successor);
-			} else {
-				toDelete.getParent().setLeft(successor);
+        if (toDelete != this.root) {
+            if (toDelete.getParent().getRight() == toDelete) {
+                toDelete.getParent().setRight(successor);
+            } else {
+                toDelete.getParent().setLeft(successor);
+            }
+        } else if (toDelete == this.root) {
+            this.root = successor;
+            if (rebalancingStart == null) {
+            	rebalancingStart = successor;
 			}
-		}
+        }
 
 		return rebalancingStart;
 	}
@@ -669,13 +667,16 @@ public class AVLTree {
 		x.setChildByDir(tallDir, taller);
 		taller.setParent(x);
 
-        rebalanceAfterJoin(x, parent, tallDir, shortDir);
+        int rebalanceComplexity = rebalanceAfterJoin(x, parent, tallDir, shortDir);
+        if (complexity < rebalanceComplexity) {
+        	System.out.println("expected " + complexity + " rebalance " + rebalanceComplexity);
+		}
 
 		this.updatePath(x);
 		return complexity;
 	}
 
-	private void rebalanceAfterJoin(IAVLNode x, IAVLNode parent, char tallDir, char shortDir) {
+	private int rebalanceAfterJoin(IAVLNode x, IAVLNode parent, char tallDir, char shortDir) {
         if (parent != null) {
             parent.setChildByDir(shortDir, x);
             if (parent.getRankDifferenceByDir(shortDir) == 0) {
@@ -705,11 +706,12 @@ public class AVLTree {
                     x.promote();
                 }
                 // we need to redo rebalance of x in case the new parent is now in error.
-                rebalanceAfterJoin(x, x.getParent(), tallDir, shortDir);
+                return 1 + rebalanceAfterJoin(x, x.getParent(), tallDir, shortDir);
             }
         } else {
             this.root = x;
         }
+		return 1;
     }
 
 	public boolean isBalanced() {
