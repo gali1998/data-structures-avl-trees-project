@@ -17,7 +17,7 @@ public class AVLTree {
 	IAVLNode min;
 	IAVLNode max;
 
-	public AVLTree() {
+	public AVLTree() { // Complexity: O(1)
 		IAVLNode virtualNode = new AVLNode();
 		this.root = virtualNode;
 		this.min = null;
@@ -391,7 +391,7 @@ public class AVLTree {
 	 * @param k
 	 * @return the requested node, or null if it is not in the tree.
 	 */
-	private IAVLNode searchNode(int k) {
+	private IAVLNode searchNode(int k) { // Complexity: O(logn)
 		if (this.empty()) {
 			return null;
 		}
@@ -404,7 +404,7 @@ public class AVLTree {
 	 * @param k - key
 	 * @return the requested node, or null if it is not in the tree.
 	 */
-	private IAVLNode searchNode(IAVLNode node, int k) {
+	private IAVLNode searchNode(IAVLNode node, int k) { // Complexity: O(logn)
 		if (node.getKey() == k)
 			return node;
 		if (node.getKey() > k) {
@@ -453,7 +453,7 @@ public class AVLTree {
 		return node;
 	}
 
-	private IAVLNode findMax() {
+	private IAVLNode findMax() { // Complexity: O(logn)
 		if (this.empty()) {
 			return null;
 		}
@@ -473,7 +473,7 @@ public class AVLTree {
 	 * Returns the info of the item with the largest key in the tree, or null if the
 	 * tree is empty
 	 */
-	public String max() {
+	public String max() { // Complexity: O(1)
 		// If the tree is empty - return null
 		if (this.empty()) {
 			return null;
@@ -566,7 +566,7 @@ public class AVLTree {
 	 *
 	 * precondition: none postcondition: none
 	 */
-	public int size() {
+	public int size() { // Complexity: O(1)
 		return this.size;
 	}
 
@@ -577,7 +577,7 @@ public class AVLTree {
 	 *
 	 * precondition: none postcondition: none
 	 */
-	public IAVLNode getRoot() {
+	public IAVLNode getRoot() { // Complexity: O(1)
 		return this.root;
 	}
 
@@ -589,7 +589,7 @@ public class AVLTree {
 	 * null (i.e. you can also assume that the tree is not empty) postcondition:
 	 * none
 	 */
-	public AVLTree[] split(int x) {
+	public AVLTree[] split(int x) { // Complexity: O(logn)
 		IAVLNode node = this.searchNode(x);
 		return this.split(x, node);
 	}
@@ -645,25 +645,21 @@ public class AVLTree {
 		return result;
 	}
 	
-	private void setFields(AVLTree tree) {
+	private void setFields(AVLTree tree) { // Complexity: O(1)
 		tree.size = tree.getRoot().getSize();
 		tree.min = tree.findMin();
 		tree.max = tree.findMax();
 	}
 	
-	private IAVLNode duplicateNode(IAVLNode node) {
+	private IAVLNode duplicateNode(IAVLNode node) { // Complexity: O(1)
 		return new AVLNode(node.getKey(), node.getValue());
 	}
 	
-	private void disconnectNodeFromParent(IAVLNode node) {
-		node.setParent(null);
-	}
-	
-	private void disconnectNodeFromLeftChild(IAVLNode node) {
+	private void disconnectNodeFromLeftChild(IAVLNode node) { // Complexity: O(1)
 		node.setLeft(new AVLNode());
 	}
 	
-	private void disconnectNodeFromRihgtChild(IAVLNode node) {
+	private void disconnectNodeFromRihgtChild(IAVLNode node) { // Complexity: O(1)
 		node.setRight(new AVLNode());
 	}
 
@@ -865,7 +861,7 @@ public class AVLTree {
 	 * @param parent - parent node
 	 * @param child - child node
 	 */
-	private int rotate(IAVLNode parent, IAVLNode child) {
+	private int rotate(IAVLNode parent, IAVLNode child) { // Complexity: O(1)
 		if (parent == null) {
 			return 0;
 		}
@@ -1113,7 +1109,7 @@ public class AVLTree {
 			this.setHeight(1 + Math.max(this.getLeft().getHeight(), this.getRight().getHeight()));
 		}
 
-		public IAVLNode getChildByDir(char dir) {
+		public IAVLNode getChildByDir(char dir) { // Complexity: O(1)
 			switch(dir) {
 				case 'R':
 					return this.getRight();
@@ -1124,7 +1120,7 @@ public class AVLTree {
 			}
 		}
 
-		public void setChildByDir(char dir, IAVLNode child) {
+		public void setChildByDir(char dir, IAVLNode child) { // Complexity: O(1)
 			switch(dir) {
 				case 'R':
 					this.setRight(child);
@@ -1137,7 +1133,7 @@ public class AVLTree {
 			}
 		}
 
-		public int getRankDifferenceByDir(char dir) {
+		public int getRankDifferenceByDir(char dir) { // Complexity: O(1)
 			switch (dir) {
 				case 'R':
 					return this.rightRankDifference();
