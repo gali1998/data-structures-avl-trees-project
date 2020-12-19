@@ -510,7 +510,7 @@ public class AVLTree {
 	 * Returns an array which contains all info in the tree, sorted by their
 	 * respective keys, or an empty array if the tree is empty.
 	 */
-	public String[] infoToArray() { // Complexity = O(log(n))
+	public String[] infoToArray() { // Complexity = O(n)
 		String[] arr = new String[this.size()];
 
 		// If the tree is empty we return an empty array
@@ -583,7 +583,7 @@ public class AVLTree {
 		return this.split(x, node);
 	}
 
-	private AVLTree[] split(int x, IAVLNode xNode) {
+	private AVLTree[] split(int x, IAVLNode xNode) { // Complexity: O(logn)
 		AVLTree[] result = new AVLTree[2];
 		// smaller
 		result[0] = new AVLTree();
@@ -659,7 +659,7 @@ public class AVLTree {
 	 * (|tree.rank - t.rank| + 1). precondition: keys(x,t) < keys() or keys(x,t) >
 	 * keys(). t/tree might be empty (rank = -1). postcondition: eys(x,t) < keys() none
 	 */
-	public int join(IAVLNode x, AVLTree t) { // Complexity = O(log(n))
+	public int join(IAVLNode x, AVLTree t) { // Complexity = O(|tree.rank - t.rank| + 1)
 		int expectedComplexity = Math.abs(this.root.getRank() - t.root.getRank()) + 1;
 		// If both trees are empty
 		if ((t.empty()) || (this.empty())) {
@@ -738,7 +738,7 @@ public class AVLTree {
      * @param tallDir - the relative direction of the taller tree ('R' or 'L')
      * @param shortDir - the relative direction of the shorter tree ('R' or 'L', opposite of tallDir)
      */
-	private void rebalanceAfterJoin(IAVLNode x, IAVLNode parent, char tallDir, char shortDir) { // Complexity = O(log(n))
+	private void rebalanceAfterJoin(IAVLNode x, IAVLNode parent, char tallDir, char shortDir) { // Complexity = O(|rank(root) - rank(x)| + 1)
         if (parent != null) {
             parent.setChildByDir(shortDir, x);
             if (parent.getRankDifferenceByDir(shortDir) == 0) {
