@@ -1436,6 +1436,7 @@ public class JoinTests {
     public static boolean randomTrees() {
         AVLTree t1;
         AVLTree t2;
+        boolean success = true;
         int maxSize = 100;
         int[][][] combinations = new int[2][maxSize-1][maxSize];
         int seperator = ThreadLocalRandom.current().nextInt(0, maxSize);
@@ -1502,7 +1503,7 @@ public class JoinTests {
             }
         }
 
-        return false;
+        return works;
     }
 
     public static boolean testSpecificCase() {

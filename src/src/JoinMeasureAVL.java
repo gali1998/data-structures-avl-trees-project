@@ -721,10 +721,6 @@ public class JoinMeasureAVL {
         return new AVLNode(node.getKey(), node.getValue());
     }
 
-    private void disconnectNodeFromParent(IAVLNode node) {
-        node.setParent(null);
-    }
-
     private void disconnectNodeFromLeftChild(IAVLNode node) {
         node.setLeft(new AVLNode());
     }

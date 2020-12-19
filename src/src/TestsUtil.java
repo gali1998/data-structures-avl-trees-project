@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import src.AVLTree;
 import src.AVLTree.IAVLNode;
 
 public class TestsUtil {
@@ -102,6 +103,7 @@ public class TestsUtil {
             return true; 
   
         /* If we reach here then tree is not height-balanced */
+		System.out.println("Not balanced on node " + node.getKey());
         return false;
     }
     

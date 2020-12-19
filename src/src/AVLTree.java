@@ -274,13 +274,14 @@ public class AVLTree {
 				successor = successor.getLeft();
 			}
 			// we return the successor's parent as the node to start from (deepest that may be unbalanced)
+			rebalancingStart = successor;
 			if (successor.getParent() != toDelete) {
 				rebalancingStart = successor.getParent();
                 successor.getParent().setLeft(successor.getRight());
                 successor.getRight().setParent(successor.getParent());
+				// In this case, since we have a binary node, and we replaced the content of the node to delete,
+				// we need to update the successor's height
 			}
-			// In this case, since we have a binary node, and we replaced the content of the node to delete,
-			// we need to update the successor's height
 			successor.setHeight(toDelete.getHeight());
 			successor.setRank(toDelete.getRank());
 		} else if (toDelete.getRight().isRealNode()) {
