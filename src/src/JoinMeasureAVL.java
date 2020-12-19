@@ -743,7 +743,6 @@ public class JoinMeasureAVL {
     public int join(IAVLNode x, JoinMeasureAVL t) {
         // first, if any of the trees
         int expectedComplexity = Math.abs(this.root.getRank() - t.root.getRank()) + 1;
-        int complexity = 1;
         // If both trees are empty
         if ((t.empty()) || (this.empty())) {
             if (x.isRealNode()) {
@@ -754,7 +753,6 @@ public class JoinMeasureAVL {
                     this.size++;
                 } else if (this.empty()) {
                     // we increase the complexity for the height (due to the insert) and add 1 for the actual insert action
-                    complexity += t.getRoot().getRank() + 1;
                     t.insert(x.getKey(), x.getValue());
                     this.size = t.size;
                     this.root = t.root;
@@ -762,12 +760,10 @@ public class JoinMeasureAVL {
                     this.max = t.max;
                 } else if (t.empty()) {
                     // we increase the complexity for the height (due to the insert) and add 1 for the actual insert action
-                    complexity += this.getRoot().getRank() + 1;
                     this.insert(x.getKey(), x.getValue());
                 }
             }
-//            return expectedComplexity;
-            return complexity;
+            return expectedComplexity;
         }
 
         // first we set up the trees orientation for the symmetric implementation
@@ -805,7 +801,6 @@ public class JoinMeasureAVL {
         while (taller.getHeight() > shorter.getHeight()) {
             parent = taller;
             taller = taller.getChildByDir(shortDir);
-            complexity++; // increasing complexity for every node we visit.
         }
         x.setParent(parent);
         x.setRank(shorter.getRank() + 1);
@@ -815,13 +810,9 @@ public class JoinMeasureAVL {
         taller.setParent(x);
 
         int rebalanceComplexity = rebalanceAfterJoin(x, parent, tallDir, shortDir);
-        if (complexity < rebalanceComplexity) {
-            System.out.println("expected " + complexity + " rebalance " + rebalanceComplexity);
-            complexity = rebalanceComplexity;
-        }
 
         this.updatePath(x);
-        return complexity;
+        return expectedComplexity;
     }
 
     private int rebalanceAfterJoin(IAVLNode x, IAVLNode parent, char tallDir, char shortDir) {

@@ -63,13 +63,12 @@ public class JoinMeasurements {
             List<Integer> predJoin = treePred.split(pred);
 
             System.out.println();
-            System.out.println(String.valueOf(i*10000));
-            System.out.print(String.valueOf("Random:,"));
+            System.out.print(String.valueOf(String.valueOf(i*10000) + " Random:,"));
             for (int cost: randJoin) {
                 System.out.print(String.valueOf(cost) + ", ");
             }
             System.out.println();
-            System.out.print(String.valueOf("Predecessor:,"));
+            System.out.print(String.valueOf(String.valueOf(i*10000) + " Predecessor:,"));
             for (int cost: predJoin) {
                 System.out.print(String.valueOf(cost) + ", ");
             }

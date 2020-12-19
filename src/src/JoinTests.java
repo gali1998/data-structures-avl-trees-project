@@ -1436,7 +1436,7 @@ public class JoinTests {
     public static boolean randomTrees() {
         AVLTree t1;
         AVLTree t2;
-        int maxSize = 1000;
+        int maxSize = 100;
         int[][][] combinations = new int[2][maxSize-1][maxSize];
         int seperator = ThreadLocalRandom.current().nextInt(0, maxSize);
         int t1Bigger;
@@ -1452,7 +1452,6 @@ public class JoinTests {
             biggerSize = ThreadLocalRandom.current().nextInt(seperator, maxSize+1) - seperator;
             t1Bigger = ThreadLocalRandom.current().nextInt(0, 2);
             combinations[t1Bigger][smallerSize][biggerSize]++;
-            System.out.println(k);
             smallerItems = getShuffledArray(smallerSize);
             AVLTree smaller = new AVLTree();
             for (int i: smallerItems) {

@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
-/**  
+/**
  *
  * AVLTree
  *
@@ -43,11 +43,11 @@ public class AVLTree {
 	 */
 	public String search(int k) { // Complexity: O(logn)
 		IAVLNode node = this.searchNode(k);
-		
+
 		if (node == null) {
 			return null;
 		}
-		
+
 		return node.getValue();
 	}
 
@@ -66,20 +66,20 @@ public class AVLTree {
 		if (this.insertNodeToBinaryTree(newNode, k) == -1) {
 			return -1;
 		}
-		
+
 		// maintain members in O(1)
 		this.size++;
-		
+
 		if (this.min == null || this.min.getKey() > newNode.getKey()) {
 			this.min = newNode;
 		}
-		
+
 		if (this.max == null || this.max.getKey() < newNode.getKey()) {
 			this.max = newNode;
 		}
-		
+
 		int numOfActions = this.rebalance(newNode);
-		
+
 		// Make sure each node is correct
 		this.updatePath(newNode);
 
@@ -148,7 +148,7 @@ public class AVLTree {
 					}
 				}
 			}
-			
+
 			// update root if needed
 			if (node.getParent() == null) {
 				newRoot = node;
@@ -230,9 +230,7 @@ public class AVLTree {
 	 * - counted as one rebalnce operation, double-rotation is counted as 2. returns
 	 * -1 if an item with key k was not found in the tree.
 	 */
-	public int delete(int k) {
-		
-		
+	public int delete(int k) { // Complexity = O(log(n))
 		IAVLNode toDelete = this.searchNode(k);
 		if (toDelete == null) {
 			return -1;
@@ -264,7 +262,7 @@ public class AVLTree {
 	 * @param toDelete - the node to delete from the tree
 	 * @return the deepest (potentially) unbalanced node
 	 */
-	private IAVLNode bstDelete(IAVLNode toDelete) {
+	private IAVLNode bstDelete(IAVLNode toDelete) { // Complexity = O(log(n)) - due to search of successor
 		IAVLNode rebalancingStart = toDelete.getParent();
 		IAVLNode successor;
 		 // if we have a right child
@@ -322,13 +320,13 @@ public class AVLTree {
 	 * @param unbalanced - the potentialy unbalanced node
 	 * @return # of rebalancing operations
 	 */
-	private int recursiveDeleteRebalancing(IAVLNode unbalanced) {
+	private int recursiveDeleteRebalancing(IAVLNode unbalanced) { // Complexity = O(log(n)) - due to ascent up tree
 		int numRebalancing = 0;
 		if (unbalanced == null) { // terminal case for root
 			return 0;
 		}
 
-		// case 1
+		// case 1 - demote
 		if ((unbalanced.rightRankDifference() == 2) && (unbalanced.leftRankDifference() == 2)) {
 			unbalanced.demote();
 			numRebalancing++;
@@ -345,37 +343,32 @@ public class AVLTree {
 			// case 2: rotate, promote & demote
 			if ((other.rightRankDifference() == 1) &&
 					(other.leftRankDifference() == 1)) {
-				numRebalancing += rotate(unbalanced, other);
+				rotate(unbalanced, other);
 				unbalanced.demote();
-				numRebalancing++;
 				other.promote();
-				numRebalancing++;
+				numRebalancing+=3;
 				// the only terminal rebalance;
 				return numRebalancing;
 			}
 			// case 3: rotate, double demote
 			else if (other.getRankDifferenceByDir(deletedDir) == 2) {
-				numRebalancing += rotate(unbalanced, other);
+				rotate(unbalanced, other);
 				unbalanced.demote();
-				numRebalancing++;
 				unbalanced.demote();
-				numRebalancing++;
 				unbalanced = other;
+				numRebalancing += 3;
 			}
 			// case 4: double rotate, triple demote, promote
 			else if (other.getRankDifferenceByDir(otherDir) == 2) {
-				numRebalancing += rotate(other, other.getChildByDir(deletedDir));
+				rotate(other, other.getChildByDir(deletedDir));
 				other.demote();
-				numRebalancing++;
 				other = other.getParent();
 				other.promote();
-				numRebalancing++;
 				numRebalancing += rotate(unbalanced, other);
 				unbalanced.demote();
-				numRebalancing++;
 				unbalanced.demote();
-				numRebalancing++;
 				unbalanced = other;
+				numRebalancing += 6;
 			}
 		}
 
@@ -437,13 +430,16 @@ public class AVLTree {
 
 		return this.min.getValue();
 	}
-	
-	// Finds the minimum of the tree, this is good for deletion
+
+    /**
+     * Finds the next min key node. releveant for deletion
+     * @return the tree's min key node
+     */
 	private IAVLNode findMin() { // Complexity: O(logn)
 		if (this.empty()) {
 			return null;
 		}
-		
+
 		IAVLNode node = this.getRoot();
 
 		while ((node.getLeft() != null) && (node.getLeft().isRealNode())) {
@@ -453,7 +449,11 @@ public class AVLTree {
 		return node;
 	}
 
-	private IAVLNode findMax() {
+    /**
+     * Finds the max key node. Relevant for deletion.
+     * @return the max key node.
+     */
+	private IAVLNode findMax() { // Complexity = O(log(n))
 		if (this.empty()) {
 			return null;
 		}
@@ -473,7 +473,7 @@ public class AVLTree {
 	 * Returns the info of the item with the largest key in the tree, or null if the
 	 * tree is empty
 	 */
-	public String max() {
+	public String max() { // Complexity = O(1)
 		// If the tree is empty - return null
 		if (this.empty()) {
 			return null;
@@ -508,20 +508,7 @@ public class AVLTree {
 	 * Returns an array which contains all info in the tree, sorted by their
 	 * respective keys, or an empty array if the tree is empty.
 	 */
-	public String[] infoToArray() {
-		// The general idea of this function, is that we basically scan all of the subtrees of this tree, according to
-		// the key value, in an ascending manner.
-		// 1. We start from the tree's root (current = root)
-		// 2. We set index from smallest (currIndex = 0)
-		// 3. Until currIndex == tree.size():
-		// 		3.1. We then travel to the next smallest key (the list is prioritized according to index):
-		// 			3.1.1. current's leftmost child node (we save every node we visit on the way in a stack)
-		//			3.1.2. current's next right child node
-		// 			3.1.3. current's last unsaved parent (using the stack's top node)
-		// 		3.2. We save it's data in position currIndex
-		//		3.3. We increment currIndex
-		// Since we visit every node at most twice (once when saving in the stack, second time when removing from the stack)
-		// we reach a total of O(n)
+	public String[] infoToArray() { // Complexity = O(log(n))
 		String[] arr = new String[this.size()];
 
 		// If the tree is empty we return an empty array
@@ -593,7 +580,7 @@ public class AVLTree {
 		IAVLNode node = this.searchNode(x);
 		return this.split(x, node);
 	}
-	
+
 	private AVLTree[] split(int x, IAVLNode xNode) {
 		AVLTree[] result = new AVLTree[2];
 		// smaller
@@ -601,28 +588,28 @@ public class AVLTree {
 		// bigger
 		result[1] = new AVLTree();
 		IAVLNode  node = xNode.getParent();
-		
+
 		if (xNode.getLeft().isRealNode()) {
 			result[0].root = xNode.getLeft();
 			result[0].root.setParent(null);
 		}
-		
+
 		if (xNode.getRight().isRealNode()) {
 			result[1].root = xNode.getRight();
 			result[1].root.setParent(null);
 		}
-		
+
 		// disconnect xNode from the tree
 		this.disconnectNodeFromLeftChild(xNode);
 		this.disconnectNodeFromRihgtChild(xNode);
-		
+
 		while (node != null) {
-			
+
 			// Adding to the smaller tree
 			if (node.getKey() < x) {
 				IAVLNode middle = this.duplicateNode(node);
 				AVLTree smaller = new AVLTree();
-				
+
 				smaller.root = node.getLeft();
 
 				smaller.root.setParent(null);
@@ -633,36 +620,36 @@ public class AVLTree {
 				AVLTree bigger = new AVLTree();
 				bigger.root = node.getRight();
 				bigger.root.setParent(null);
-				
+
 				result[1].join(middle, bigger);
 			}
-			
+
 			node = node.getParent();
 		}
-		
+
 		this.setFields(result[0]);
 		this.setFields(result[1]);
 		return result;
 	}
-	
+
 	private void setFields(AVLTree tree) {
 		tree.size = tree.getRoot().getSize();
 		tree.min = tree.findMin();
 		tree.max = tree.findMax();
 	}
-	
+
 	private IAVLNode duplicateNode(IAVLNode node) {
 		return new AVLNode(node.getKey(), node.getValue());
 	}
-	
+
 	private void disconnectNodeFromParent(IAVLNode node) {
 		node.setParent(null);
 	}
-	
+
 	private void disconnectNodeFromLeftChild(IAVLNode node) {
 		node.setLeft(new AVLNode());
 	}
-	
+
 	private void disconnectNodeFromRihgtChild(IAVLNode node) {
 		node.setRight(new AVLNode());
 	}
@@ -674,9 +661,8 @@ public class AVLTree {
 	 * (|tree.rank - t.rank| + 1). precondition: keys(x,t) < keys() or keys(x,t) >
 	 * keys(). t/tree might be empty (rank = -1). postcondition: eys(x,t) < keys() none
 	 */
-	public int join(IAVLNode x, AVLTree t) {
-		// first, if any of the trees
-		int complexity = 1;
+	public int join(IAVLNode x, AVLTree t) { // Complexity = O(log(n))
+		int expectedComplexity = Math.abs(this.root.getRank() - t.root.getRank()) + 1;
 		// If both trees are empty
 		if ((t.empty()) || (this.empty())) {
 			if (x.isRealNode()) {
@@ -686,20 +672,16 @@ public class AVLTree {
 					this.min = x;
 					this.size++;
 				} else if (this.empty()) {
-					// we increase the complexity for the height (due to the insert) and add 1 for the actual insert action
-					complexity += t.getRoot().getRank() + 1;
 					t.insert(x.getKey(), x.getValue());
 					this.size = t.size;
 					this.root = t.root;
 					this.min = t.min;
 					this.max = t.max;
 				} else if (t.empty()) {
-					// we increase the complexity for the height (due to the insert) and add 1 for the actual insert action
-					complexity += this.getRoot().getRank() + 1;
 					this.insert(x.getKey(), x.getValue());
 				}
 			}
-			return complexity;
+			return expectedComplexity;
 		}
 
 		// first we set up the trees orientation for the symmetric implementation
@@ -737,7 +719,6 @@ public class AVLTree {
 		while (taller.getHeight() > shorter.getHeight()) {
 		    parent = taller;
 			taller = taller.getChildByDir(shortDir);
-			complexity++; // increasing complexity for every node we visit.
 		}
         x.setParent(parent);
 		x.setRank(shorter.getRank() + 1);
@@ -746,16 +727,20 @@ public class AVLTree {
 		x.setChildByDir(tallDir, taller);
 		taller.setParent(x);
 
-        int rebalanceComplexity = rebalanceAfterJoin(x, parent, tallDir, shortDir);
-        if (complexity < rebalanceComplexity) {
-        	System.out.println("expected " + complexity + " rebalance " + rebalanceComplexity);
-		}
+        rebalanceAfterJoin(x, parent, tallDir, shortDir);
 
 		this.updatePath(x);
-		return complexity;
+		return expectedComplexity;
 	}
 
-	private int rebalanceAfterJoin(IAVLNode x, IAVLNode parent, char tallDir, char shortDir) {
+    /**
+     * rebalancing the tree after the bst join operation
+     * @param x - the parent node of the shorter joined tree
+     * @param parent - the parent of x
+     * @param tallDir - the relative direction of the taller tree ('R' or 'L')
+     * @param shortDir - the relative direction of the shorter tree ('R' or 'L', opposite of tallDir)
+     */
+	private void rebalanceAfterJoin(IAVLNode x, IAVLNode parent, char tallDir, char shortDir) { // Complexity = O(log(n))
         if (parent != null) {
             parent.setChildByDir(shortDir, x);
             if (parent.getRankDifferenceByDir(shortDir) == 0) {
@@ -771,7 +756,7 @@ public class AVLTree {
                 }
                 // case 3: double rotate
                 else if (x.getRankDifferenceByDir(shortDir) == 2) {
-                    IAVLNode xTall = x.getChildByDir(tallDir);
+                    IAVLNode xTall = x.getChildByDir(tallDir); // x's child of the taller tree direction
                     rotate(x, xTall);
                     rotate(parent, xTall);
                     x.demote();
@@ -785,12 +770,11 @@ public class AVLTree {
                     x.promote();
                 }
                 // we need to redo rebalance of x in case the new parent is now in error.
-                return 1 + rebalanceAfterJoin(x, x.getParent(), tallDir, shortDir);
+                rebalanceAfterJoin(x, x.getParent(), tallDir, shortDir);
             }
         } else {
             this.root = x;
         }
-		return 1;
     }
 
 	public boolean isBalanced() {
@@ -826,38 +810,38 @@ public class AVLTree {
 	}
 
 	/**
-	 * 
+	 *
 	 * ********************* UTIL METHODS*********************************
-	 * 
-	 * 
+	 *
+	 *
 	 */
 
 	// Returns an ordered list of nodes
 	private List<IAVLNode> inorderWalk() { // Complexity: O(n)
 		LinkedList<IAVLNode> treeNodes = new LinkedList<>();
-		
-		
+
+
 		this.inorderWalk(this.root, treeNodes);
-		
+
 		return treeNodes;
 	}
-	
+
 	private void inorderWalk(IAVLNode node, List<IAVLNode> nodes) { // Complexity: O(n)
 		if (node == null || !node.isRealNode()) {
 			return;
 		}
-		
+
 		if (node.getLeft().isRealNode()) {
 			this.inorderWalk(node.getLeft(), nodes);
 		}
-		
+
 		nodes.add(node);
-		
+
 		if (node.getRight().isRealNode()) {
 			this.inorderWalk(node.getRight(), nodes);
 		}
 	}
-	
+
 
 	/**
 	 * rotates a parent and child node (decides the rotation direction according to the child's direction)
@@ -865,7 +849,7 @@ public class AVLTree {
 	 * @param parent - parent node
 	 * @param child - child node
 	 */
-	private int rotate(IAVLNode parent, IAVLNode child) {
+	private int rotate(IAVLNode parent, IAVLNode child) { // Complexity = O(1)
 		if (parent == null) {
 			return 0;
 		}
@@ -1113,7 +1097,12 @@ public class AVLTree {
 			this.setHeight(1 + Math.max(this.getLeft().getHeight(), this.getRight().getHeight()));
 		}
 
-		public IAVLNode getChildByDir(char dir) {
+        /**
+         * wrapping getRight(), getLeft(), retrieves this node's child by given direction
+         * @param dir - 'R' for right, 'L' for left
+         * @return the wanted child for dir in {'R', 'L'} else null
+         */
+		public IAVLNode getChildByDir(char dir) { // Complexity = O(1)
 			switch(dir) {
 				case 'R':
 					return this.getRight();
@@ -1124,7 +1113,12 @@ public class AVLTree {
 			}
 		}
 
-		public void setChildByDir(char dir, IAVLNode child) {
+        /**
+         * Wrapping setRight, setLeft, setting a child according to given direction
+         * @param dir - 'R' for right, 'L' for left
+         * @param child - the child node to set.
+         */
+		public void setChildByDir(char dir, IAVLNode child) { // Complexity = O(1)
 			switch(dir) {
 				case 'R':
 					this.setRight(child);
@@ -1137,7 +1131,12 @@ public class AVLTree {
 			}
 		}
 
-		public int getRankDifferenceByDir(char dir) {
+        /**
+         * gets the rank diff between this and this' child by direction
+         * @param dir - 'R' for diff with right child, 'L' for diff with left child
+         * @return the rank diff
+         */
+		public int getRankDifferenceByDir(char dir) { // Complexity = O(1)
 			switch (dir) {
 				case 'R':
 					return this.rightRankDifference();
@@ -1147,11 +1146,11 @@ public class AVLTree {
 					return -4; // completely un-achievable if tree is well maintained
 			}
 		}
-		public void setRank(int rank) {
+		public void setRank(int rank) { // Complexity = O(1)
 			this.rank = rank;
 		}
 	}
-	
+
 	// Remove this
 
 	public AVLNode createNode(int key, String val) {
